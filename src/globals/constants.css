@@ -1,0 +1,23 @@
+body {
+    background:#E7E7E3;
+    display:flex;
+}
+
+.basic {
+box-shadow: 10px 10px 5px lightblue;
+}
+
+
+.soft {
+box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 
+            0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.neumorphism {
+background-color: #f0f2f5; /* Màu nền phải trùng màu body */
+box-shadow:  9px 9px 18px #c3c5c8,
+            -9px -9px 18px #ffffff;
+border-radius: 20px;
+}
+
+
+
