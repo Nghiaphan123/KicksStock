@@ -3,7 +3,7 @@
 // -----------------------------
 
 // Sample product data (not directly tied to grid, acts as data source)
-const sampleData = [
+let sampleData = [
   {
     name: "Adidas Ultra Boost",
     category: "Sneaker",
