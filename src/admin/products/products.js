@@ -30,7 +30,7 @@ function createItem(name, category, description, image, price, amount) {
     name: name || "Unnamed Product",
     category: category || "Uncategorized",
     description: description || "No description available.",
-    image: image || "https://via.placeholder.com/60",
+    image: image || "./../../res/images/products/winterKick.png",
     price: price || "$0.00",
     amount: amount || 0
   };
