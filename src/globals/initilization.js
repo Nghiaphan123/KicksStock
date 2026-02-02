@@ -5,7 +5,7 @@ let products = [
     brand: "Adidas",
     price: 125.00,
     tag: "New Release",
-    image: "https://example.com/adidas-navy.png",
+    image: "res/images/winterKick.png",
     colors: [
       { name: "Shadow Navy", hex: "#2C3545", selected: true },
       { name: "Army Green", hex: "#788575", selected: false }
@@ -234,11 +234,36 @@ let products = [
 ];
 // Đẩy danh sách sản phẩm lên localStorage nếu chưa có
 if (!localStorage.getItem('products')) {
-    localStorage.setItem('products', JSON.stringify(products));
+    localStorage.setItem('products', JSON.stringify(productItems));
 }
 /**
  * initialization.js
  * File này dùng để khởi tạo trạng thái ban đầu của trang web
  */
 
-export default products;
+window.onload = function() {
+    console.log("Trang web đã sẵn sàng!");
+
+    // 1. KIỂM TRA DỮ LIỆU
+    // Kiểm tra xem biến 'products' đã tồn tại chưa (tránh lỗi ReferenceError)
+    if (typeof productItems === 'undefined') {
+        console.error("Lỗi: Không tìm thấy biến 'products'. Hãy kiểm tra lại file data hoặc thứ tự nhúng script.");
+        return;
+    }
+
+    // 2. KHỞI TẠO GIAO DIỆN
+    try {
+        // Render sản phẩm đầu tiên lên phần chi tiết (Upper section)
+        // Mặc định lấy sản phẩm index 0
+        if (productItems.length > 0) {
+            renderProductDetail(productItems[0]);
+        }
+
+        // Render toàn bộ danh sách sản phẩm xuống lưới (Lower section)
+        renderProductGrid();
+        
+        console.log("Khởi tạo dữ liệu thành công!");
+    } catch (error) {
+        console.error("Đã xảy ra lỗi trong quá trình render:", error);
+    }
+};

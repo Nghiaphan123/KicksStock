@@ -1,8 +1,7 @@
-import products from "../../globals/initilization.js"
-
+let productItems = JSON.parse(localStorage.getItem("products")) || [];
 
 // Build brand list dynamically from products
-const brandSet = new Set(products.map(p => p.brand));
+const brandSet = new Set(productItems.map(p => p.brand));
 const brandList = Array.from(brandSet).map(brand => ({
   label: brand,
   key: brand
@@ -14,7 +13,7 @@ const brandButtons = new Map();
 brandList.forEach(brand => selectedBrands.set(brand.key, false));
 
 // Filter container (what’s currently displayed)
-let filteredItems = products.slice(); // start with all products
+let filteredItems = productItems.slice(); // start with all products
 let pageIndex = 1;
 const itemsPerPage = 9;
 
@@ -28,7 +27,7 @@ const card = document.createElement("div");
 card.className = "product-card";
 card.innerHTML = `
 	<div class="product-header">
-	<img src="${item.image}" alt="${item.name}" />
+	<img src="${"../../../" +item.image}" alt="${item.name}" />
 	<div class="info">
 		<h3>${item.name}</h3>
 		<div class="category">${item.brand}</div>
@@ -72,9 +71,9 @@ function filterItems() {
 	let filtered;
 
 	if (activeBrands.length === 0) {
-		filtered = products.slice(); // all products
+		filtered = productItems.slice(); // all products
 	} else {
-		filtered = products.filter(item => activeBrands.includes(item.brand));
+		filtered = productItems.filter(item => activeBrands.includes(item.brand));
 	}
 
 	filteredItems = filtered;
@@ -162,7 +161,7 @@ function updateBrandCounts(items) {
 }
 
 function refreshBrandCounts() {
-  	updateBrandCounts(products);
+  	updateBrandCounts(productItems);
 }
 
 function createBrandButton({ label, key }) {
@@ -221,7 +220,7 @@ function renderBrandBar() {
 	sidebar.appendChild(section);
 
 	// Update counts after buttons are created
-	updateBrandCounts(products);
+	updateBrandCounts(productItems);
 }
 
 
@@ -229,8 +228,9 @@ function renderBrandBar() {
 // Initialize
 // -----------------------------
 document.addEventListener("DOMContentLoaded", () => {
+	productItems = JSON.parse(localStorage.getItem("products")) || [];
 	renderBrandBar();
 	refreshBrandCounts();
 	filterItems(); // ensures all items are shown by default
-	renderPaginationBar(Math.ceil(products.length / itemsPerPage));
+	renderPaginationBar(Math.ceil(productItems.length / itemsPerPage));
 });
