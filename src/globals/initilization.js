@@ -256,7 +256,7 @@ let products = [
 
 // Đẩy danh sách sản phẩm lên localStorage nếu chưa có
 if (!localStorage.getItem('products')) {
-    localStorage.setItem('products', JSON.stringify(productItems));
+    localStorage.setItem('products', JSON.stringify(products));
 }
 /**
  * initialization.js

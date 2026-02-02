@@ -23,44 +23,117 @@ const itemsPerPage = 9;
 
 // Render a single product card
 function renderItem(item) {
-const card = document.createElement("div");
-card.className = "product-card";
-card.innerHTML = `
-	<div class="product-header">
-	<img src="${"../../../" +item.image}" alt="${item.name}" />
-	<div class="info">
-		<h3>${item.name}</h3>
-		<div class="category">${item.brand}</div>
-		<div class="price">$${item.price.toFixed(2)}</div>
-	</div>
-	</div>
-	<div class="product-description">${item.description}</div>
-	<div class="product-stats">
-	<div>Tag: ${item.tag}</div>
-	<div>Colors: ${item.colors.map(c => c.name).join(", ")}</div>
-	<div>Sizes: ${item.sizes.map(s => s.val).join(", ")}</div>
-	</div>
-`;
-return card;
+	const card = document.createElement("div");
+	card.className = "product-card";
+	card.innerHTML = `
+		<div class="product-header">
+			<img src="${"../../../" + item.image}" alt="${item.name}" />
+			<div class="info">
+				<h3>${item.name}</h3>
+				<div class="category">${item.brand}</div>
+				<div class="price">$${item.price.toFixed(2)}</div>
+			</div>
+			<button class="edit-btn">Edit</button>
+		</div>
+		<div class="product-description">${item.description}</div>
+		<div class="product-stats">
+			<div class="stats-left">
+				<div>Tag: ${item.tag}</div>
+				<div>Colors: ${item.colors.map(c => c.name).join(", ")}</div>
+				<div>Sizes: ${item.sizes.map(s => s.val).join(", ")}</div>
+			</div>
+			<div class="amount-display">Amount: ${item.amount}</div>
+		</div>
+	`;
+
+	// Attach event listener to the edit button
+	card.querySelector(".edit-btn").addEventListener("click", () => openEditPanel(item));
+	return card;
+}
+
+function openEditPanel(item) {
+	const panel = document.createElement("div");
+	panel.className = "edit-panel";
+
+	// Build color inputs
+	const colorInputs = item.colors.map((c, i) => `
+		<label>Color ${i + 1}:
+			<input type="text" value="${c.name}" class="edit-color" data-index="${i}" />
+		</label>
+	`).join("");
+
+	// Build size inputs
+	const sizeInputs = item.sizes.map((s, i) => `
+		<label>Size ${i + 1}:
+			<input type="number" value="${s.val}" class="edit-size" data-index="${i}" />
+		</label>
+	`).join("");
+
+	panel.innerHTML = `
+		<h2>Edit Product</h2>
+		<label>Name: <input type="text" value="${item.name}" id="edit-name" /></label>
+		<label>Brand: <input type="text" value="${item.brand}" id="edit-brand" /></label>
+		<label>Price: <input type="number" value="${item.price}" id="edit-price" /></label>
+		<label>Tag: <input type="text" value="${item.tag}" id="edit-tag" /></label>
+		<label>Description: <textarea id="edit-description">${item.description}</textarea></label>
+		<label>Amount: <input type="number" value="${item.amount}" id="edit-amount" /></label>
+
+		<h3>Colors</h3>
+		${colorInputs}
+
+		<h3>Sizes</h3>
+		${sizeInputs}
+
+		<div class="panel-actions">
+			<button id="cancel-edit">Cancel</button>
+			<button id="save-edit">Save</button>
+		</div>
+	`;
+
+	document.body.appendChild(panel);
+
+	// Cancel button
+	document.getElementById("cancel-edit").addEventListener("click", () => {
+		panel.remove();
+	});
+
+	// Save button
+	document.getElementById("save-edit").addEventListener("click", () => {
+		item.name = document.getElementById("edit-name").value;
+		item.brand = document.getElementById("edit-brand").value;
+		item.price = parseFloat(document.getElementById("edit-price").value);
+		item.tag = document.getElementById("edit-tag").value;
+		item.description = document.getElementById("edit-description").value;
+		item.amount = parseInt(document.getElementById("edit-amount").value, 10);
+
+		// Update colors
+		document.querySelectorAll(".edit-color").forEach(input => {
+			const idx = parseInt(input.dataset.index, 10);
+			item.colors[idx].name = input.value;
+		});
+
+		// Update sizes
+		document.querySelectorAll(".edit-size").forEach(input => {
+			const idx = parseInt(input.dataset.index, 10);
+			item.sizes[idx].val = parseInt(input.value, 10);
+		});
+
+		// Save back to localStorage
+		const index = productItems.findIndex(p => p.id === item.id);
+		if (index !== -1) {
+			productItems[index] = item;
+			localStorage.setItem("products", JSON.stringify(productItems));
+		}
+
+		// Refresh UI
+		filterItems();
+		panel.remove();
+	});
 }
 
 // -----------------------------
 // Filter
 // -----------------------------
-
-// Add item to filter results
-function addToFilter(item) {
-	filteredItems.push(item);
-	refreshBrandCounts();
-}
-
-// Remove item from filter results by index
-function removeFromFilter(index) {
-if (index >= 0 && index < filteredItems.length) {
-	filteredItems.splice(index, 1);
-	refreshBrandCounts();
-}
-}
 
 // Filter items based on categories
 function filterItems() {
