@@ -322,3 +322,128 @@ function updateCartIconCount() {
         countElement.style.display = totalItems > 0 ? 'inline-block' : 'none';
     }
 }
+// ===== CART BOTTOM JAVASCRIPT =====
+class CartBottom {
+    constructor() {
+        this.cartKey = 'shoppingCart';
+        this.init();
+    }
+
+    // Lấy dữ liệu từ localStorage
+    getCartData() {
+        try {
+            const cart = localStorage.getItem(this.cartKey);
+            return cart ? JSON.parse(cart) : [];
+        } catch (e) {
+            console.error('Lỗi đọc giỏ hàng:', e);
+            return [];
+        }
+    }
+
+    // Tính tổng tiền
+    getTotalPrice() {
+        const cart = this.getCartData();
+        return cart.reduce((sum, item) => {
+            const price = parseFloat(item.price) || 0;
+            return sum + price;
+        }, 0);
+    }
+
+    // Tính tổng số items
+    getTotalItems() {
+        return this.getCartData().length;
+    }
+
+    // Toggle hiển thị giỏ hàng
+    toggleCart() {
+        const cartPanel = document.getElementById('cartPanel');
+        if (cartPanel) {
+            cartPanel.classList.toggle('show');
+            if (cartPanel.classList.contains('show')) {
+                this.renderCart();
+            }
+        }
+    }
+
+    // Ẩn giỏ hàng
+    hideCart() {
+        const cartPanel = document.getElementById('cartPanel');
+        if (cartPanel) {
+            cartPanel.classList.remove('show');
+        }
+    }
+
+    // Render giỏ hàng
+    renderCart() {
+        const cartContainer = document.getElementById('cartItemsList');
+        const totalElement = document.getElementById('cartTotal');
+        const badge = document.getElementById('cartBadge');
+        const cartData = this.getCartData();
+
+        // Cập nhật badge
+        if (badge) {
+            badge.textContent = this.getTotalItems();
+        }
+
+        if (!cartContainer) return;
+
+        if (cartData.length === 0) {
+            cartContainer.innerHTML = `
+                <div class="empty-cart">
+                    <p>Giỏ hàng trống</p>
+                </div>
+            `;
+            if (totalElement) totalElement.textContent = '$0.00';
+            return;
+        }
+
+        cartContainer.innerHTML = cartData.map(item => `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <h4>${item.name || 'Sản phẩm'}</h4>
+                    <div class="price">$${parseFloat(item.price).toFixed(2)}</div>
+                </div>
+                <span class="cart-item-quantity">x1</span>
+            </div>
+        `).join('');
+
+        if (totalElement) {
+            totalElement.textContent = `$${this.getTotalPrice().toFixed(2)}`;
+        }
+    }
+
+    // Khởi tạo
+    init() {
+        // Render khi load page
+        document.addEventListener('DOMContentLoaded', () => {
+            this.renderCart();
+        });
+
+        // Lắng nghe thay đổi từ localStorage
+        window.addEventListener('storage', (e) => {
+            if (e.key === this.cartKey) {
+                this.renderCart();
+            }
+        });
+
+        // Đóng panel khi click outside
+        document.addEventListener('click', (e) => {
+            const cartPanel = document.getElementById('cartPanel');
+            const toggleBtn = document.querySelector('.cart-toggle-btn');
+            
+            if (cartPanel && cartPanel.classList.contains('show')) {
+                if (!cartPanel.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    this.hideCart();
+                }
+            }
+        });
+    }
+}
+
+// Khởi tạo global
+const cartBottom = new CartBottom();
+
+// Hàm toggle để dùng trong HTML
+function toggleCart() {
+    cartBottom.toggleCart();
+}
