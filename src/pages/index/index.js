@@ -30,9 +30,7 @@ function renderProductDetail(product) {
         return `<div class="color-circle ${isSelected}" style="background-color: ${colorObj.hex};"></div>`;
     }).join('');
 
-  // ... (Code render colorsHtml và sizesHtml ở trên) ...
-
-container.innerHTML = `
+    container.innerHTML = `
     <div class="detail-image">
         <span class="tag-badge">${product.tag}</span>
         <img src="${product.image}" alt="${product.name}">
@@ -55,27 +53,26 @@ container.innerHTML = `
             <div class="size-grid">${sizesHtml}</div>
         </div>
 
-      <div class="btn-group">
-    <button id="btn-add-to-cart" class="btn btn-black">Add To Cart</button>
-    <button class="btn btn-fav"><i class="far fa-heart"></i></button>
-</div>
-<button id="btn-buy-now" class="btn btn-blue" style="width:100%">Buy It Now</button>
+        <div class="btn-group">
+            <button id="btn-add-to-cart" class="btn btn-black">Add To Cart</button>
+            <button class="btn btn-fav"><i class="far fa-heart"></i></button>
+        </div>
+        <button id="btn-buy-now" class="btn btn-blue" style="width:100%">Buy It Now</button>
         
         <div class="description">
             ${product.description} <br><br>
             This product is excluded from all promotional discounts and offers.
         </div>
     </div>
-`;
+    `;
 
-// --- PHẦN LOGIC QUAN TRỌNG CẦN THÊM NGAY SAU KHI GÁN INNERHTML ---
-handleAddToCartLogic(product);
+    // Xử lý logic thêm vào giỏ hàng
+    handleAddToCartLogic(product);
     
     if(container) window.scrollTo({ behavior: 'smooth', top: container.offsetTop - 20 });
 }
 
 // --- 3. XỬ LÝ SỰ KIỆN FILTER (CORE) ---
-
 function toggleFilter(type, value, element) {
     // A. Logic BRAND (Checkbox)
     if (type === 'brand') {
@@ -154,9 +151,7 @@ function getFilteredProducts() {
         const sizeMatch = state.filters.sizes.length === 0 || state.filters.sizes.some(s => productSizeValues.includes(s));
 
         // 4. Lọc Màu (Mới)
-        // Lấy danh sách mã màu của giày hiện tại
         const productColors = product.colors.map(c => c.hex);
-        // Kiểm tra xem giày có chứa màu đang chọn không
         const colorMatch = state.filters.colors.length === 0 || state.filters.colors.some(c => productColors.includes(c));
 
         return brandMatch && priceMatch && sizeMatch && colorMatch;
@@ -229,57 +224,47 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof products !== 'undefined' && products.length > 0) {
         renderProductDetail(products[0]);
         renderProductGrid();
+        renderNewDrops();
     }
 });
 
 /* ==========================================================
    PHẦN LOGIC MỚI: XỬ LÝ GIỎ HÀNG & NÚT MUA HÀNG
-   (Dán đoạn này vào cuối file index.js)
    ========================================================== */
-
 function handleAddToCartLogic(product) {
-    let selectedSize = null; // Biến lưu size người dùng chọn
+    let selectedSize = null;
 
-    // 1. Logic chọn Size (Click vào ô size nào thì ô đó sáng lên)
+    // 1. Logic chọn Size
     const sizeBtns = document.querySelectorAll('.size-btn');
     sizeBtns.forEach(btn => {
-        // Bỏ qua nếu size bị disabled (hết hàng)
         if (btn.classList.contains('disabled')) return; 
 
         btn.addEventListener('click', function() {
-            // Xóa class 'selected' ở tất cả các nút khác
             sizeBtns.forEach(b => b.classList.remove('selected'));
-            // Thêm class 'selected' vào nút vừa bấm
             this.classList.add('selected');
-            // Lưu giá trị size
             selectedSize = this.innerText; 
         });
     });
 
     // 2. Hàm xử lý chung cho Add Cart và Buy Now
     function addToCart(isBuyNow = false) {
-        // Validate: Bắt buộc chọn size
         if (!selectedSize) {
             alert("Please select a size first!");
             return;
         }
 
-        // Tạo object sản phẩm để lưu
         const cartItem = {
             id: product.id,
             name: product.name,
             price: product.price,
             image: product.image,
             size: selectedSize,
-            // Lấy màu đầu tiên làm mặc định hoặc logic chọn màu nếu cần
             color: product.colors && product.colors.length > 0 ? product.colors[0].name : "Standard", 
             quantity: 1
         };
 
-        // Lấy giỏ hàng từ LocalStorage
         let cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
 
-        // Kiểm tra trùng lặp (Cùng ID và Size -> Tăng số lượng)
         const existingItemIndex = cart.findIndex(item => item.id === cartItem.id && item.size === cartItem.size);
 
         if (existingItemIndex !== -1) {
@@ -288,21 +273,16 @@ function handleAddToCartLogic(product) {
             cart.push(cartItem);
         }
 
-        // Lưu lại vào LocalStorage
         localStorage.setItem('shoppingCart', JSON.stringify(cart));
-
-        // Cập nhật số trên icon giỏ hàng ngay lập tức
         updateCartIconCount();
 
-        // Điều hướng
         if (isBuyNow) {
-            window.location.href = '../cart/cart.html'; // Chuyển sang trang Cart
+            window.location.href = '../cart/cart.html';
         } else {
             alert("Added to cart successfully!");
         }
     }
 
-    // 3. Bắt sự kiện click cho 2 nút
     const btnAdd = document.getElementById('btn-add-to-cart');
     const btnBuy = document.getElementById('btn-buy-now');
 
@@ -315,46 +295,82 @@ function updateCartIconCount() {
     const cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     
-    // Tìm phần tử hiển thị số (class .cart-count trong header HTML)
     const countElement = document.querySelector('.cart-count');
     if (countElement) {
         countElement.innerText = totalItems;
         countElement.style.display = totalItems > 0 ? 'inline-block' : 'none';
     }
 }
-// ===== CART BOTTOM JAVASCRIPT =====
+
+// Dữ liệu mẫu cho phần New Drops (4 sản phẩm mới nhất)
+const newDropsData = typeof products !== 'undefined' ? products.slice(0, 4) : [];
+
+// Hàm Render New Drops
+function renderNewDrops() {
+    const container = document.getElementById('new-drops-grid');
+    if (!container) return;
+
+    container.innerHTML = '';
+    
+    newDropsData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'drop-card';
+        
+        card.innerHTML = `
+            <div class="drop-image-wrap">
+                <span class="drop-tag">New</span>
+                <img src="${item.image}" alt="${item.name}">
+            </div>
+            <div class="drop-title">${item.name}</div>
+            <button class="btn-drop-view">
+                VIEW PRODUCT - <span>$${item.price}</span>
+            </button>
+        `;
+
+        const btnView = card.querySelector('.btn-drop-view');
+        btnView.addEventListener('click', () => {
+            renderProductDetail(item);
+            const detailSection = document.getElementById('product-detail-section');
+            if(detailSection) detailSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        const imgWrap = card.querySelector('.drop-image-wrap');
+        imgWrap.addEventListener('click', () => {
+            renderProductDetail(item);
+            const detailSection = document.getElementById('product-detail-section');
+            if(detailSection) detailSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        container.appendChild(card);
+    });
+}
 class CartBottom {
     constructor() {
         this.cartKey = 'shoppingCart';
         this.init();
     }
 
-    // Lấy dữ liệu từ localStorage
     getCartData() {
         try {
             const cart = localStorage.getItem(this.cartKey);
             return cart ? JSON.parse(cart) : [];
         } catch (e) {
-            console.error('Lỗi đọc giỏ hàng:', e);
             return [];
         }
     }
 
-    // Tính tổng tiền
     getTotalPrice() {
         const cart = this.getCartData();
         return cart.reduce((sum, item) => {
-            const price = parseFloat(item.price) || 0;
-            return sum + price;
+            return sum + (parseFloat(item.price) * (item.quantity || 1));
         }, 0);
     }
 
-    // Tính tổng số items
     getTotalItems() {
-        return this.getCartData().length;
+        const cart = this.getCartData();
+        return cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     }
 
-    // Toggle hiển thị giỏ hàng
     toggleCart() {
         const cartPanel = document.getElementById('cartPanel');
         if (cartPanel) {
@@ -365,7 +381,6 @@ class CartBottom {
         }
     }
 
-    // Ẩn giỏ hàng
     hideCart() {
         const cartPanel = document.getElementById('cartPanel');
         if (cartPanel) {
@@ -373,16 +388,16 @@ class CartBottom {
         }
     }
 
-    // Render giỏ hàng
     renderCart() {
         const cartContainer = document.getElementById('cartItemsList');
         const totalElement = document.getElementById('cartTotal');
         const badge = document.getElementById('cartBadge');
         const cartData = this.getCartData();
+        const totalItems = this.getTotalItems();
 
-        // Cập nhật badge
         if (badge) {
-            badge.textContent = this.getTotalItems();
+            badge.textContent = totalItems;
+            badge.style.display = totalItems > 0 ? 'flex' : 'none';
         }
 
         if (!cartContainer) return;
@@ -403,7 +418,7 @@ class CartBottom {
                     <h4>${item.name || 'Sản phẩm'}</h4>
                     <div class="price">$${parseFloat(item.price).toFixed(2)}</div>
                 </div>
-                <span class="cart-item-quantity">x1</span>
+                <span class="cart-item-quantity">x${item.quantity || 1}</span>
             </div>
         `).join('');
 
@@ -412,21 +427,17 @@ class CartBottom {
         }
     }
 
-    // Khởi tạo
     init() {
-        // Render khi load page
         document.addEventListener('DOMContentLoaded', () => {
             this.renderCart();
         });
 
-        // Lắng nghe thay đổi từ localStorage
         window.addEventListener('storage', (e) => {
             if (e.key === this.cartKey) {
                 this.renderCart();
             }
         });
 
-        // Đóng panel khi click outside
         document.addEventListener('click', (e) => {
             const cartPanel = document.getElementById('cartPanel');
             const toggleBtn = document.querySelector('.cart-toggle-btn');
@@ -440,10 +451,8 @@ class CartBottom {
     }
 }
 
-// Khởi tạo global
 const cartBottom = new CartBottom();
 
-// Hàm toggle để dùng trong HTML
 function toggleCart() {
     cartBottom.toggleCart();
 }
