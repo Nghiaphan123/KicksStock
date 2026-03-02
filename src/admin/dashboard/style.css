@@ -75,3 +75,9 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
+/* Make pie chart smaller */
+.pie-graph {
+  max-width: 300px;   /* about 50% smaller */
+  margin: 0 auto;     /* center it */
+}
+
