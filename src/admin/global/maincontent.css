@@ -5,6 +5,11 @@ body {
   background-color: #ffffff;
 }
 
+main {
+    border-left: 1px;
+    overflow-y: scroll;
+}
+
 /* Layout container */
 .main-container {
   display: flex;

@@ -64,3 +64,14 @@
 #users-panel:hover .panel-desc {
   color: #fff;
 }
+
+
+.dashboard-graph {
+  margin-top: 40px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
