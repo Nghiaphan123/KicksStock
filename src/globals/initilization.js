@@ -1,140 +1,140 @@
 let products = [
     {
         id: 1, name: "ADIDAS 4DFWD X PARLEY RUNNING SHOES", brand: "Adidas", price: 125.00, tag: "New Release",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/ADIDAS 4DFWD X PARLEY RUNNING SHOES.jpg",
         colors: [{ name: "Shadow Navy", hex: "#2C3545", selected: true }, { name: "Army Green", hex: "#788575", selected: false }],
         sizes: [{ val: 38, available: true }, { val: 39, available: false }, { val: 40, available: true }, { val: 41, available: true }],
         description: "Shadow Navy / Army Green style for comfort.", amount: 50
     },
     {
         id: 2, name: "NIKE AIR MAX 270", brand: "Nike", price: 150.00, tag: "Best Seller",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/NIKE AIR MAX 270.jpg",
         colors: [{ name: "White/Black", hex: "#FFFFFF", selected: true }, { name: "Red", hex: "#FF0000", selected: false }],
         sizes: [{ val: 40, available: true }, { val: 41, available: true }, { val: 42, available: false }, { val: 43, available: true }],
         description: "Nike introducing the new air max for everyone's comfort.", amount: 50
     },
     {
-        id: 3, name: "JORDAN RETRO 4 'MILITARY BLUE'", brand: "Jordan", price: 210.00, tag: "Trending",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        id: 3, name: "JORDAN RETRO 4 ", brand: "Jordan", price: 210.00, tag: "Trending",
+        image: "./../../.././../../../res/images/products/JORDAN RETRO 4.jpg",
         colors: [{ name: "Blue/White", hex: "#4f6bf5", selected: true }],
         sizes: [{ val: 42, available: true }, { val: 43, available: true }],
         description: "Classic silhouette with modern blue accents.", amount: 5
     },
     {
         id: 4, name: "YEEZY BOOST 350 V2", brand: "Adidas", price: 230.00, tag: "Limited Edition",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/YEEZY BOOST 350 V2.jpg",
         colors: [{ name: "Cream White", hex: "#F5F5DC", selected: true }],
         sizes: [{ val: 36, available: true }, { val: 37, available: true }],
         description: "Ultra-comfortable Boost technology.", amount: 50
     },
     {
         id: 5, name: "PUMA RS-X REINVENT", brand: "Puma", price: 110.00, tag: "Sale",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/PUMA RS-X REINVENT.jpg",
         colors: [{ name: "Pastel Mix", hex: "#FFD1DC", selected: true }],
         sizes: [{ val: 38, available: true }, { val: 39, available: true }],
         description: "Chunky sneaker style for everyday wear.", amount: 50
     },
     {
         id: 6, name: "NEW BALANCE 550", brand: "New Balance", price: 120.00, tag: "New Release",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/NEW BALANCE 550.jpg",
         colors: [{ name: "Green/White", hex: "#006400", selected: true }],
         sizes: [{ val: 40, available: true }, { val: 44, available: false }],
         description: "Retro basketball inspired design.", amount: 50
     },
     {
         id: 7, name: "CONVERSE CHUCK 70 CLASSIC", brand: "Converse", price: 85.00, tag: "Classic",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/CONVERSE CHUCK 70 CLASSIC.jpg",
         colors: [{ name: "Black", hex: "#000000", selected: true }],
         sizes: [{ val: 35, available: true }, { val: 45, available: true }],
         description: "The timeless high-top sneaker.", amount: 5
     },
     {
         id: 8, name: "VANS OLD SKOOL CORE", brand: "Vans", price: 65.00, tag: "Essential",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/VANS OLD SKOOL CORE.jpg",
         colors: [{ name: "Black/White", hex: "#111111", selected: true }],
         sizes: [{ val: 39, available: true }, { val: 40, available: true }],
         description: "Iconic sidestripe skate shoe.", amount: 50
     },
     {
         id: 9, name: "ASICS GEL-KAYANO 30", brand: "Asics", price: 160.00, tag: "Running",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/ASICS GEL-KAYANO 30.jpg",
         colors: [{ name: "Deep Ocean", hex: "#000080", selected: true }],
         sizes: [{ val: 41, available: true }, { val: 42, available: true }],
         description: "Maximum support and stability for runners.", amount: 50
     },
     {
         id: 10, name: "BALENCIAGA TRIPLE S", brand: "Luxury", price: 950.00, tag: "High-End",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/BALENCIAGA TRIPLE S.jpg",
         colors: [{ name: "Grey/Red/Blue", hex: "#808080", selected: true }],
         sizes: [{ val: 38, available: true }, { val: 42, available: true }],
         description: "The pioneer of the chunky sneaker trend.", amount: 5
     },
     {
         id: 11, name: "NIKE DUNK LOW PANDA", brand: "Nike", price: 110.00, tag: "Hot Deal",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/NIKE DUNK LOW PANDA.jpg",
         colors: [{ name: "White/Black", hex: "#FFFFFF", selected: true }],
         sizes: [{ val: 38, available: true }, { val: 43, available: false }],
         description: "Most popular colorway for street style.", amount: 50
     },
     {
         id: 12, name: "ADIDAS ULTRABOOST LIGHT", brand: "Adidas", price: 190.00, tag: "New Release",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/ADIDAS ULTRABOOST LIGHT.jpg",
         colors: [{ name: "Solar Red", hex: "#FF4500", selected: true }],
         sizes: [{ val: 40, available: true }, { val: 41, available: true }],
         description: "The lightest Ultraboost ever made.", amount: 5
     },
     {
         id: 13, name: "REEBOK CLUB C 85", brand: "Reebok", price: 75.00, tag: "Vintage",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/REEBOK CLUB C 85.jpg",
         colors: [{ name: "Vintage White", hex: "#FAF9F6", selected: true }],
         sizes: [{ val: 42, available: true }, { val: 43, available: true }],
         description: "Clean, minimalist 80s court style.", amount: 5
     },
     {
         id: 14, name: "SALOMON XT-6", brand: "Salomon", price: 180.00, tag: "Outdoor",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/SALOMON XT-6.jpg",
         colors: [{ name: "Ghost Grey", hex: "#D3D3D3", selected: true }],
         sizes: [{ val: 41, available: true }, { val: 42, available: true }],
         description: "Technical footwear for trail and urban life.", amount: 50
     },
     {
         id: 15, name: "DR. MARTENS 1460 BOOTS", brand: "Dr. Martens", price: 170.00, tag: "Iconic",
-        image: "./../../.././../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/DR. MARTENS 1460 BOOTS.jpg",
         colors: [{ name: "Cherry Red", hex: "#8B0000", selected: true }],
         sizes: [{ val: 37, available: true }, { val: 41, available: true }],
         description: "The original 8-eye leather boot.", amount: 50
     },
     {
         id: 16, name: "ON CLOUD 5", brand: "On", price: 140.00, tag: "Comfort",
-        image: "./../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/ON CLOUD 5.jpg",
         colors: [{ name: "All Black", hex: "#000000", selected: true }],
         sizes: [{ val: 40, available: true }, { val: 45, available: true }],
         description: "Swiss engineering for cloud-like steps.", amount: 50
     },
     {
         id: 17, name: "NEW BALANCE 990V6", brand: "New Balance", price: 200.00, tag: "Premium",
-        image: "./../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/NEW BALANCE 990V6.jpg",
         colors: [{ name: "Grey", hex: "#A9A9A9", selected: true }],
         sizes: [{ val: 40, available: true }, { val: 41, available: true }],
         description: "The standard for premium performance sneakers.", amount: 50
     },
     {
         id: 18, name: "ADIDAS SAMBA OG", brand: "Adidas", price: 100.00, tag: "Must-Have",
-        image: "./../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/ADIDAS SAMBA OG.jpg",
         colors: [{ name: "Cloud White", hex: "#FFFFFF", selected: true }],
         sizes: [{ val: 38, available: true }, { val: 39, available: true }],
         description: "From indoor soccer to street icon.", amount: 5
     },
     {
         id: 19, name: "NIKE AIR FORCE 1 '07", brand: "Nike", price: 115.00, tag: "Essential",
-        image: "./../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/NIKE AIR FORCE 1 '07.jpg",
         colors: [{ name: "Triple White", hex: "#FFFFFF", selected: true }],
         sizes: [{ val: 36, available: true }, { val: 46, available: true }],
         description: "Basketball OG that redefined sneaker culture.", amount: 50
     },
     {
         id: 20, name: "OFF-WHITE OUT OF OFFICE", brand: "Luxury", price: 550.00, tag: "Designer",
-        image: "./../../../res/images/products/winterKick.png",
+        image: "./../../.././../../../res/images/products/OFF-WHITE OUT OF OFFICE.jpg",
         colors: [{ name: "White/Pink", hex: "#FFC0CB", selected: true }],
         sizes: [{ val: 37, available: true }, { val: 41, available: true }],
         description: "Virgil Abloh's take on a 80s tennis shoe.", amount: 5
