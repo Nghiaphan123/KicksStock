@@ -2,13 +2,18 @@
 List 
 ---------------------------------------- */
 
+.orders-wrapper {
+  height: 700px;       /* fixed height */
+  overflow-y: auto;        /* scroll when overflow */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
 .orders-table {
   width: 100%;
-  border-collapse: separate; /* important: allows border-radius */
-  border-spacing: 0;         /* remove gaps */
-  margin-top: 20px;
+  border-collapse: collapse;
+  border-spacing: 0;    
   background: #fff;
-  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -29,36 +34,48 @@ List
 
 .orders-table th,
 .orders-table td {
-  padding: 12px 16px;
-  text-align: left;
+  padding: 10px;
   border-bottom: 1px solid #eee;
-  font-size: 14px;
 }
 
 .orders-table th {
   background-color: #f9f9f9;
-  font-weight: 600;
+  text-align: left;
 }
+
 
 .orders-table tr:hover {
   background-color: #f5f5f5;
 }
 
 .status {
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 80px;
+}
+
+.status.pending {
+  background-color: #d8d6ce; /* light orange */
+  color: #514e47;
+}
+
+.status.done {
+  background-color: #d4edda; /* light green */
+  color: #155724;
+}
+
+.status.canceled {
+  background-color: #f8d7da; /* light red */
+  color: #51060e;
 }
 
 .status.delivered {
   background-color: #e0f7fa;
   color: #00796b;
-}
-
-.status.canceled {
-  background-color: #ffe0b2;
-  color: #e65100;
 }
 
 /* ----------------------------------------
@@ -76,7 +93,7 @@ Panel
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   z-index: 1000;
-  width: 360px;
+  width: 700px;
   max-height: 80vh;
   overflow-y: auto;
   display: flex;
@@ -114,4 +131,107 @@ Panel
   background-color: #007bff;
   color: #fff;
   cursor: pointer;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-item-card {
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.item-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.item-qty {
+  font-size: 14px;
+  color: #555;
+}
+
+.panel-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.done-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #28a745; /* green */
+  color: #fff;
+  cursor: pointer;
+}
+
+.canceled-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #f21d33; /* red */
+  color: #fff;
+  cursor: pointer;
+}
+
+.pending-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #646156; /* orange */
+  color: #000;
+  cursor: pointer;
+}
+
+/* ----------------------------------------
+Pagination 
+---------------------------------------- */
+
+.pagination {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination button {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #e2e6ea;
+}
+
+.pagination button.active {
+  background: #343a40; /* dark background */
+  color: #fff;
+  border-color: #343a40;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

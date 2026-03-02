@@ -27,22 +27,27 @@
 
 		<!-- Main Content -->
 		<main class="main-content">
-		<h2>Recent Orders</h2>
-		<table class="orders-table">
-			<thead>
-				<tr>
+			<h2>Recent Orders</h2>
+			<div class="orders-wrapper">
+				<table class="orders-table">
+				<thead>
+					<tr>
 					<th>Order ID</th>
 					<th>Date</th>
 					<th>Payment Method</th>
 					<th>Customer Name</th>
 					<th>Status</th>
 					<th>Total</th>
-				</tr>
-			</thead>
-			<tbody id="orders-body">
-			<!-- Orders injected here -->
-			</tbody>
-		</table>
+					</tr>
+				</thead>
+				<tbody id="orders-body">
+					<!-- Orders injected here -->
+				</tbody>
+				</table>
+			</div>
+
+			<!-- Pagination bar -->
+			<div id="pagination" class="pagination"></div>
 		</main>
 	</div>
 </body>

@@ -1,0 +1,68 @@
+.users-wrapper {
+  height: 700px;       /* fixed height */
+  overflow-y: auto;        /* scroll when overflow */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.users-table th {
+  background-color: #f9f9f9;
+  text-align: left;
+}
+
+.status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 80px;
+}
+
+.status.active {
+  background-color: #d4edda; /* light green */
+  color: #155724;
+}
+
+.status.banned {
+  background-color: #f8d7da; /* light red */
+  color: #721c24;
+}
+
+.status.unchangeable {
+  background-color: #cce5ff; /* light blue */
+  color: #004085;
+}
+
+.pagination {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination button {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background: #343a40;
+  color: #fff;
+  border-color: #343a40;
+}

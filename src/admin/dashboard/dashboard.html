@@ -6,13 +6,15 @@
   <title>Manager Dashboard</title>
   <link rel="stylesheet" href="../global/maincontent.css" />
   <link rel="stylesheet" href="../global/sidebar.css" />
+  <link rel="stylesheet" href="style.css" />
   <script src="../global/sidebar.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </head>
 <body>
   <div class="main-container">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <h2><img src="../../../../res/images/logoKick.png" alt="Kick Stock Logo" /> Kick Stock</h2>
+      <h2>Kick Stock</h2>
       <ul class="nav-list">
         <li><div class="nav-item" data-url="../dashboard/dashboard.html"><a href="#">Dashboard</a></div></li>
         <li><div class="nav-item" data-url="../products/products.html"><a href="#">Products</a></div></li>
@@ -23,7 +25,24 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <!-- Placeholder for future dashboard content -->
+      <h2>Dashboard Overview</h2>
+      <div class="dashboard-panels">
+        <div class="panel" id="profit-panel">
+          <div class="panel-value" id="profit-count">0</div>
+          <h3>Profit</h3>
+          <p class="panel-desc" id="profit-desc"></p>
+        </div>
+        <div class="panel" id="products-panel">
+          <div class="panel-value" id="products-count">0</div>
+          <h3>Products</h3>
+          <p class="panel-desc" id="products-desc"></p>
+        </div>
+        <div class="panel" id="users-panel">
+          <div class="panel-value" id="users-count">0</div>
+          <h3>Users</h3>
+          <p class="panel-desc" id="users-desc"></p>
+        </div>
+      </div>
     </main>
   </div>
 </body>

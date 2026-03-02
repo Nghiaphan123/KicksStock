@@ -1,0 +1,66 @@
+.dashboard-panels {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.panel {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: background 0.4s, color 0.4s;
+  color: #000;
+  position: relative;
+}
+
+.panel-value {
+  font-size: 24px;
+  font-weight: bold;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.panel h3 {
+  margin-top: 50px;
+  font-size: 20px;
+}
+
+.panel-desc {
+  font-size: 14px;
+  margin-top: 8px;
+  color: inherit;
+}
+
+/* Gradient hover effects */
+#profit-panel:hover {
+  background: linear-gradient(to top right, #1b5e20, #66bb6a); /* green gradient */
+  color: #fff;
+}
+
+#products-panel:hover {
+  background: linear-gradient(to top right, #0d47a1, #42a5f5); /* blue gradient */
+  color: #fff;
+}
+
+#users-panel:hover {
+  background: linear-gradient(to top right, #b71c1c, #ef5350); /* red gradient */
+  color: #fff;
+}
+
+/* Ensure text flips to white */
+#profit-panel:hover h3,
+#profit-panel:hover .panel-value,
+#profit-panel:hover .panel-desc,
+#products-panel:hover h3,
+#products-panel:hover .panel-value,
+#products-panel:hover .panel-desc,
+#users-panel:hover h3,
+#users-panel:hover .panel-value,
+#users-panel:hover .panel-desc {
+  color: #fff;
+}
