@@ -1,55 +1,59 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Read users list from localStorage
-  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
+  const tbody = document.getElementById("orders-body");
 
-  // Flatten all orders across users
-  const allOrders = users.flatMap(user => user.orders.map(order => ({
-    ...order,
-    customerName: user.name // assume each user has a "name" property
-  })));
-
-  renderOrders(allOrders);
-});
-
-function renderOrders(orders) {
-  const main = document.querySelector(".main-content");
-
-  // Create table
-  const table = document.createElement("table");
-  table.className = "orders-table";
-
-  // Header
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Order ID</th>
-        <th>Date</th>
-        <th>Payment Method</th>
-        <th>Customer Name</th>
-        <th>Status</th>
-        <th>Amount</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  `;
-
-  const tbody = table.querySelector("tbody");
-
-  // Rows
-  orders.forEach(order => {
+  allOrders.forEach(order => {
     const row = document.createElement("tr");
+
+    const dateObj = new Date(order.date);
+    const formattedDate = dateObj.toLocaleDateString("en-GB");
+
     row.innerHTML = `
-      <td>${order.productName}</td>
-      <td>#${order.id}</td>
-      <td>${order.createdDate}</td>
-      <td>${order.paymentMethod}</td>
+      <td>#${order.orderId}</td>
+      <td>${formattedDate}</td>
+      <td>${order.paymentMethod || "N/A"}</td>
       <td>${order.customerName}</td>
       <td><span class="status ${order.status.toLowerCase()}">${order.status}</span></td>
-      <td>$${order.amount.toFixed(2)}</td>
+      <td>$${order.totalPrice.toFixed(2)}</td>
     `;
+
+    // Add click event to show panel
+    row.addEventListener("click", () => openOrderPanel(order));
+
     tbody.appendChild(row);
   });
+});
 
-  main.innerHTML = ""; // clear placeholder
-  main.appendChild(table);
+function openOrderPanel(order) {
+  const panel = document.createElement("div");
+  panel.className = "order-panel";
+
+  // Build items list
+  const itemsList = order.items.map(item => `
+    <div class="order-item">
+      <strong>${item.name}</strong> — Qty: ${item.amount || 1}
+    </div>
+  `).join("");
+
+  panel.innerHTML = `
+    <h2>Order Details</h2>
+    <div><strong>Order ID:</strong> #${order.orderId}</div>
+    <div><strong>Date:</strong> ${new Date(order.date).toLocaleDateString("en-GB")}</div>
+    <div><strong>Customer:</strong> ${order.customerName}</div>
+    <div><strong>Status:</strong> ${order.status}</div>
+    <div><strong>Total Price:</strong> $${order.totalPrice.toFixed(2)}</div>
+    <div><strong>Payment Method:</strong> ${order.paymentMethod || "N/A"}</div>
+    <div><strong>Shipping Address:</strong> ${order.shippingAddress}</div>
+    <h3>Items</h3>
+    ${itemsList}
+    <div class="panel-actions">
+      <button id="close-panel">Close</button>
+    </div>
+  `;
+
+  document.body.appendChild(panel);
+
+  document.getElementById("close-panel").addEventListener("click", () => {
+    panel.remove();
+  });
 }

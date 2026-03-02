@@ -18,24 +18,31 @@
 		<aside class="sidebar">
 			<h2>Kick Stock</h2>
 			<ul class="nav-list">
-				<li>
-					<div class="nav-item" data-url="../dashboard/dashboard.html"><a href="#">Dashboard</a></div>
-				</li>
-				<li>
-					<div class="nav-item" data-url="../products/products.html"><a href="#">Products</a></div>
-				</li>
-				<li>
-					<div class="nav-item" data-url="../orders/orders.html"><a href="#">Orders</a></div>
-				</li>
-				<li>
-					<div class="nav-item" data-url="../users/users.html"><a href="#">Users</a></div>
-				</li>
+				<li><div class="nav-item" data-url="../dashboard/dashboard.html"><a href="#">Dashboard</a></div></li>
+				<li><div class="nav-item" data-url="../products/products.html"><a href="#">Products</a></div></li>
+				<li><div class="nav-item" data-url="../orders/orders.html"><a href="#">Orders</a></div></li>
+				<li><div class="nav-item" data-url="../users/users.html"><a href="#">Users</a></div></li>
 			</ul>
 		</aside>
 
 		<!-- Main Content -->
 		<main class="main-content">
-			<!-- Placeholder for future dashboard content -->
+		<h2>Recent Orders</h2>
+		<table class="orders-table">
+			<thead>
+				<tr>
+					<th>Order ID</th>
+					<th>Date</th>
+					<th>Payment Method</th>
+					<th>Customer Name</th>
+					<th>Status</th>
+					<th>Total</th>
+				</tr>
+			</thead>
+			<tbody id="orders-body">
+			<!-- Orders injected here -->
+			</tbody>
+		</table>
 		</main>
 	</div>
 </body>
