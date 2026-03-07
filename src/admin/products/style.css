@@ -1,4 +1,17 @@
 
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
 /* ----------------------------------------
 Header 
 ---------------------------------------- */
@@ -117,7 +130,26 @@ Product Card(Item)
   font-size: 14px;
   font-weight: bold;
   color: #333;
+  padding: 5px;
+  margin-top: 10px;
+  border-radius: 8px;
 }
+
+.amount-display.safe {
+  background-color: rgb(123, 247, 183); 
+  color: rgb(8, 69, 62);
+}
+
+.amount-display.warning {
+  background-color: #fce494; 
+  color: #856404;
+}
+
+.amount-display.dangerous {
+  background-color: #fb9199;
+  color: #721c24;
+}
+
 
 .edit-btn {
   position: absolute;
@@ -271,4 +303,78 @@ Brand
   background-color: skyblue;
   color: #fff;
   border-color: #007bff;
+}
+
+/* ----------------------------------------
+Add item panel
+---------------------------------------- */
+
+.edit-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 800px;       /* fixed width */
+  height: 500px;      /* fixed height */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+  display: flex;      /* split left/right */
+}
+
+.panel-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.panel-left {
+  width: 400px;
+  border-right: 1px solid #ddd;
+  padding: 20px;
+  overflow: hidden; /* no scroll */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-holder {
+  width: 80%;          /* 80% of left side */
+  height: 50%;         /* 50% of left side height */
+  background-color: #ddd; /* gray placeholder */
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.image-holder img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.panel-right {
+  width: 400px;       /* exactly half */
+  padding: 20px;
+  overflow-y: auto;   /* scrollable */
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.edit-panel h2 {
+  margin-bottom: 15px;
+}
+
+.edit-panel label {
+  display: block;
+  margin-bottom: 10px;
 }

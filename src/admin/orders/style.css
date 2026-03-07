@@ -1,3 +1,17 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+
 /* ----------------------------------------
 List 
 ---------------------------------------- */
@@ -59,23 +73,18 @@ List
 }
 
 .status.pending {
-  background-color: #d8d6ce; /* light orange */
-  color: #514e47;
+  background-color: #fce494; 
+  color: #856404;
 }
 
 .status.done {
-  background-color: #d4edda; /* light green */
-  color: #155724;
+  background-color: rgb(123, 247, 183); 
+  color: rgb(8, 69, 62);
 }
 
 .status.canceled {
-  background-color: #f8d7da; /* light red */
-  color: #51060e;
-}
-
-.status.delivered {
-  background-color: #e0f7fa;
-  color: #00796b;
+  background-color: #fb9199;
+  color: #721c24;
 }
 
 /* ----------------------------------------

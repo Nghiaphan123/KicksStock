@@ -5,6 +5,9 @@ function openOrderPanel(order) {
   const panel = document.createElement("div");
   panel.className = "order-panel";
 
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
+
   const itemsList = order.items.map(item => `
     <div class="order-item-card">
       <div class="item-info">
@@ -35,29 +38,34 @@ function openOrderPanel(order) {
     </div>
   `;
 
-  document.body.appendChild(panel);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
 
   // Close button
   panel.querySelector(".close-btn").addEventListener("click", () => {
     panel.remove();
+    overlay.remove();
   });
 
   // Done button
   panel.querySelector(".done-btn").addEventListener("click", () => {
     updateOrderStatus(order.orderId, "Done");
     panel.remove();
+    overlay.remove();
   });
 
   // Cancel button
   panel.querySelector(".canceled-btn").addEventListener("click", () => {
     updateOrderStatus(order.orderId, "Canceled");
     panel.remove();
+    overlay.remove();
   });
 
   // Pending button
   panel.querySelector(".pending-btn").addEventListener("click", () => {
     updateOrderStatus(order.orderId, "Pending");
     panel.remove();
+    overlay.remove();
   });
 
 }

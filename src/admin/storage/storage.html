@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager Products</title>
+  <link rel="stylesheet" href="../global/maincontent.css" />
+  <link rel="stylesheet" href="../global/sidebar.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="../global/sidebar.js" defer></script>
+  <script src="storage.js" defer></script>
+  <script src="../../globals/initilization.js" defer></script>
+
+</head>
+
+<body>
+  <div class="main-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Kick Stock</h2>
+      <ul class="nav-list">
+        <li>
+          <div class="nav-item" data-url="../dashboard/dashboard.html"><a href="#">Dashboard</a></div>
+        </li>
+        <li>
+          <div class="nav-item" data-url="../products/products.html"><a href="#">Products</a></div>
+        </li>
+        <li>
+          <div class="nav-item" data-url="../orders/orders.html"><a href="#">Orders</a></div>
+        </li>
+        <li>
+          <div class="nav-item" data-url="../users/users.html"><a href="#">Users</a></div>
+        </li>
+        <li>
+          <div class="nav-item" data-url="../storage/storage.html"><a href="#">Storage</a></div>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="products-header">
+        <h1>Storage</h1>
+      </div>
+
+      <div class="product-card-row header-row">
+        <div>ID</div>
+        <div>Name</div>
+        <div>Current Amount</div>
+        <div>Price</div>
+        <div>Add Amount</div>
+      </div>
+
+      <!-- Products selection list -->
+      <div class="storage-container">
+        <div class="product-list" id="storage-list"></div>
+      </div>
+
+      <!-- Summary -->
+      <div class="storage-summary">
+        <p id="total-price">Total Price: $0.00</p>
+        <div class="summary-actions">
+          <button id="buy-btn">Buy</button>
+          <button id="clear-btn">Clear</button>
+        </div>
+      </div>
+
+      <!-- Storage Notes Section -->
+      <h2>Storage Notes</h2>
+      <div class="note-card header-row">
+        <div>ID</div>
+        <div>Total</div>
+        <div>Date</div>
+      </div>
+
+
+      <div class="storage-notes">
+        <div id="notes-list"></div>
+      </div>
+
+      <div class="notes-pagination" id="notes-pagination"></div>
+
+    </main>
+  </div>
+</body>
+
+</html>
