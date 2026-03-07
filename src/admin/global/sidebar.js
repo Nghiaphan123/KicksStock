@@ -24,4 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
       item.classList.add('active');
     }
   });
+
+  // Dynamically create Admin Logout button
+  const logoutBtn = document.createElement('button');
+  logoutBtn.id = 'admin-logout-btn';
+  logoutBtn.textContent = 'Logout';
+  document.body.appendChild(logoutBtn);
+
+  // Redirect on click
+  logoutBtn.addEventListener('click', () => {
+    window.location.href = '../auth/login-7381408-4194819-admin-login.html';
+  });
 });

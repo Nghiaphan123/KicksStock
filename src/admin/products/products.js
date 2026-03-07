@@ -175,6 +175,7 @@ function openEditPanel(item) {
 		// Refresh UI
 		filterItems();
 		panel.remove();
+		overlay.remove();
 	});
 }
 
