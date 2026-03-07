@@ -910,6 +910,9 @@ function openCheckoutSlide() {
     const cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
     if (cart.length === 0) { alert('Giỏ hàng trống!'); return; }
 
+    // Reset về -1 mỗi lần mở → renderCheckoutAddressSection sẽ chọn default
+    checkoutSelectedAddressIndex = -1;
+
     renderCheckoutMiniItems(cart);
     renderCheckoutAddressSection();
 
@@ -930,21 +933,22 @@ function renderCheckoutAddressSection() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) { container.innerHTML = ''; return; }
 
-    const users    = getUsers();
-    const userObj  = users.find(u => u.id === currentUser.id);
+    const users     = getUsers();
+    const userObj   = users.find(u => u.id === currentUser.id);
     const addresses = userObj?.address || [];
 
-    // Find default or use first
-    const defaultIdx = addresses.findIndex(a => a.isDefault);
-    checkoutSelectedAddressIndex = defaultIdx !== -1 ? defaultIdx : (addresses.length > 0 ? 0 : -1);
+    // Chỉ set selectedIndex khi lần đầu render (chưa có lựa chọn nào)
+    // KHÔNG override nếu user đã chọn thủ công
+    if (checkoutSelectedAddressIndex === -1 || checkoutSelectedAddressIndex >= addresses.length) {
+        const defaultIdx = addresses.findIndex(a => a.isDefault);
+        checkoutSelectedAddressIndex = defaultIdx !== -1 ? defaultIdx : (addresses.length > 0 ? 0 : -1);
+    }
 
     if (addresses.length === 0) {
-        // No address → show form directly
         container.innerHTML = buildNewAddressForm(true);
         return;
     }
 
-    // Has addresses → show ol list + "New address?" button
     const items = addresses.map((addr, i) => `
         <li id="co-addr-item-${i}" onclick="selectCheckoutAddress(${i})"
             style="padding:12px 16px;border:2px solid ${i === checkoutSelectedAddressIndex ? '#4f6bf5' : '#e0e0e0'};
@@ -974,6 +978,17 @@ function renderCheckoutAddressSection() {
         </div>`;
 }
 
+function updateCheckoutAddressHighlight() {
+    // Chỉ update CSS highlight — KHÔNG re-render toàn bộ
+    document.querySelectorAll('[id^="co-addr-item-"]').forEach(li => {
+        const i = parseInt(li.id.replace('co-addr-item-', ''));
+        const selected = i === checkoutSelectedAddressIndex;
+        li.style.border      = `2px solid ${selected ? '#4f6bf5' : '#e0e0e0'}`;
+        li.style.background  = selected ? '#f0f4ff' : '#fff';
+        li.querySelector('span').textContent = selected ? '🔵' : '⚪';
+    });
+}
+
 function buildNewAddressForm(standalone) {
     return `
         <div style="${standalone ? '' : ''}">
@@ -994,9 +1009,9 @@ function buildNewAddressForm(standalone) {
 
 function selectCheckoutAddress(index) {
     checkoutSelectedAddressIndex = index;
-    // Re-render address list to update highlight
-    renderCheckoutAddressSection();
-    // Hide new-addr form if it was open
+    // Chỉ update highlight DOM — không re-render toàn bộ để tránh reset state
+    updateCheckoutAddressHighlight();
+    // Ẩn form new address nếu đang mở
     const form = document.getElementById('co-new-addr-form');
     if (form) form.style.display = 'none';
 }
