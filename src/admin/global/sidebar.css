@@ -64,3 +64,25 @@
   text-decoration: none;
   font-size: 16px;
 }
+
+
+
+
+#admin-logout-btn {
+  position: fixed;       
+  bottom: 0px;          
+  left: 0px;            
+  width: 280px;
+  height: 50px;
+  background-color: #ff4b5d; /* red for logout */
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#admin-logout-btn:hover {
+  background-color: #c82333;
+}
