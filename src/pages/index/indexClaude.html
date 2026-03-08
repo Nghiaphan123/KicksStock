@@ -84,12 +84,16 @@
             <div class="filter-group">
                 <h4>Color</h4>
                 <div class="color-filter-grid">
-                    <div class="filter-color-btn" style="background-color:#4f6bf5;" onclick="toggleFilter('color','#4f6bf5',this)"></div>
-                    <div class="filter-color-btn" style="background-color:#ffaa00;" onclick="toggleFilter('color','#ffaa00',this)"></div>
-                    <div class="filter-color-btn" style="background-color:#222222;" onclick="toggleFilter('color','#222222',this)"></div>
-                    <div class="filter-color-btn" style="background-color:#1a4d2e;" onclick="toggleFilter('color','#1a4d2e',this)"></div>
-                    <div class="filter-color-btn" style="background-color:#555555;" onclick="toggleFilter('color','#555555',this)"></div>
-                    <div class="filter-color-btn" style="background-color:#FFFFFF;border:1px solid #ccc;" onclick="toggleFilter('color','#FFFFFF',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#000000;" title="Black"       onclick="toggleFilter('color','#000000',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#FFFFFF;border:1px solid #ccc;" title="White" onclick="toggleFilter('color','#FFFFFF',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#FF0000;" title="Red"         onclick="toggleFilter('color','#FF0000',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#4f6bf5;" title="Blue"        onclick="toggleFilter('color','#4f6bf5',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#2C3545;" title="Navy"        onclick="toggleFilter('color','#2C3545',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#808080;" title="Grey"        onclick="toggleFilter('color','#808080',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#006400;" title="Green"       onclick="toggleFilter('color','#006400',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#8B0000;" title="Dark Red"    onclick="toggleFilter('color','#8B0000',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#FF4500;" title="Orange Red"  onclick="toggleFilter('color','#FF4500',this)"></div>
+                    <div class="filter-color-btn" style="background-color:#FFC0CB;" title="Pink"        onclick="toggleFilter('color','#FFC0CB',this)"></div>
                 </div>
             </div>
             <div class="filter-group">
@@ -192,7 +196,7 @@
             <div class="promo-banner">
                 <h2>Saving to celebrate</h2>
                 <p>Enjoy up to 60% off thousands of styles during the End of Year sale - while supplies last. No code needed.</p>
-                
+                <a href="#">Join us</a> or <a href="#" onclick="openAuthModal('login');return false;">Sign-in</a>
             </div>
 
             <div class="cart-layout">
@@ -210,7 +214,7 @@
                     <div class="summary-row"><span>Sales Tax</span><span>-</span></div>
                     <div class="summary-row total"><span>Total</span><span id="summary-final-total">$0.00</span></div>
                     <button class="btn-checkout">CHECKOUT</button>
-                 
+                    <a href="#" class="promo-link">Use a promo code</a>
                 </div>
             </div>
         </div>
@@ -247,17 +251,22 @@
             <div class="checkout-body">
                 <div class="checkout-form-section">
                     <h3>Login and Checkout faster</h3>
+
+                    <!-- CONTACT -->
                     <div class="form-group">
                         <h4>Contact Details</h4>
                         <p class="sub-text">We will use these details to keep you informed about your delivery.</p>
                         <input type="email" class="input-field" placeholder="Email" id="checkout-email">
                     </div>
-                    <!-- Dynamic address section rendered by JS -->
+
+                    <!-- ADDRESS -->
                     <div id="checkout-address-section" class="form-group"></div>
+
+                    <!-- DELIVERY OPTIONS -->
                     <div class="form-group">
                         <h4>Delivery Options</h4>
                         <div class="delivery-option selected" id="delivery-standard" onclick="selectDelivery('standard')">
-                            <div class="d-info"><span class="d-title">Standard Delivery</span><span class="d-desc">Enter your address to see when you'll get your order</span></div>
+                            <div class="d-info"><span class="d-title">Standard Delivery</span><span class="d-desc">Delivered to your address</span></div>
                             <span class="d-price">$6.00</span>
                         </div>
                         <div class="delivery-option" id="delivery-collect" onclick="selectDelivery('collect')">
@@ -266,18 +275,79 @@
                         </div>
                     </div>
 
+                    <!-- PAYMENT METHOD -->
+                    <div class="form-group">
+                        <h4>Payment Method</h4>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                            <div class="payment-option selected" id="pay-card"    onclick="selectPaymentMethod('card')">
+                                <i class="far fa-credit-card"></i> Card
+                            </div>
+                            <div class="payment-option" id="pay-cod"     onclick="selectPaymentMethod('cod')">
+                                <i class="fas fa-money-bill-wave"></i> Cash (COD)
+                            </div>
+                            <div class="payment-option" id="pay-momo"    onclick="selectPaymentMethod('momo')">
+                                <i class="fas fa-wallet"></i> Momo
+                            </div>
+                            <div class="payment-option" id="pay-zalopay" onclick="selectPaymentMethod('zalopay')">
+                                <i class="fas fa-bolt"></i> ZaloPay
+                            </div>
+                            <div class="payment-option" id="pay-bank"    onclick="selectPaymentMethod('bank')" style="grid-column:1/-1;">
+                                <i class="fas fa-university"></i> Bank Transfer
+                            </div>
+                        </div>
+
+                        <!-- Card form -->
+                        <div id="pf-card">
+                            <input type="text" class="input-field" id="card-number"
+                                placeholder="Card number  1234 5678 9012 3456" maxlength="19"
+                                oninput="this.value=this.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim()"
+                                style="margin-bottom:10px;">
+                            <div style="display:flex;gap:10px;margin-bottom:10px;">
+                                <input type="text" class="input-field" id="card-expiry"
+                                    placeholder="MM/YY" maxlength="5" style="flex:1;"
+                                    oninput="this.value=this.value.replace(/\D/g,'').replace(/^(\d{2})(\d)/,'$1/$2')">
+                                <input type="text" class="input-field" id="card-cvv"
+                                    placeholder="CVV" maxlength="3" style="flex:1;">
+                            </div>
+                            <input type="text" class="input-field" id="card-name" placeholder="Cardholder name">
+                        </div>
+
+                        <!-- COD -->
+                        <div id="pf-cod" style="display:none;padding:14px;background:#fffbf0;border-radius:10px;border:1px solid #f0e0b0;font-size:14px;color:#7a5c00;">
+                            💵 Bạn thanh toán tiền mặt khi nhận hàng. Vui lòng chuẩn bị đúng số tiền.
+                        </div>
+
+                        <!-- Momo -->
+                        <div id="pf-momo" style="display:none;padding:14px;background:#fff0f8;border-radius:10px;border:1px solid #f0b0d8;font-size:14px;color:#a0006a;text-align:center;">
+                            <div style="font-size:26px;margin-bottom:6px;">📱</div>
+                            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Momo: <span style="letter-spacing:2px;">0909 123 456</span></div>
+                            <div style="font-size:12px;opacity:0.8;">Nội dung: <b>KICKS + tên của bạn</b></div>
+                        </div>
+
+                        <!-- ZaloPay -->
+                        <div id="pf-zalopay" style="display:none;padding:14px;background:#f0f6ff;border-radius:10px;border:1px solid #b0ccf0;font-size:14px;color:#0055aa;text-align:center;">
+                            <div style="font-size:26px;margin-bottom:6px;">⚡</div>
+                            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">ZaloPay: <span style="letter-spacing:2px;">0909 123 456</span></div>
+                            <div style="font-size:12px;opacity:0.8;">Nội dung: <b>KICKS + tên của bạn</b></div>
+                        </div>
+
+                        <!-- Bank Transfer -->
+                        <div id="pf-bank" style="display:none;padding:14px;background:#f5f5f5;border-radius:10px;border:1px solid #ddd;font-size:13px;color:#333;line-height:2;">
+                            🏦 <b>Vietcombank</b><br>
+                            STK: <b>1234 5678 9012</b><br>
+                            Chủ TK: <b>KICKS STORE</b><br>
+                            Nội dung: <b>KICKS + tên của bạn</b>
+                        </div>
+                    </div>
+
                     <!-- PROMO CODE -->
-                    <div class="form-group" id="promo-section">
+                    <div class="form-group">
                         <h4>Promo Code</h4>
                         <div style="display:flex;gap:8px;">
-                            <input type="text" id="promo-input" class="input-field"
-                                placeholder="Enter promo code"
-                                style="flex:1;text-transform:uppercase;"
-                                oninput="this.value=this.value.toUpperCase()">
+                            <input type="text" id="promo-input" class="input-field" placeholder="Enter promo code"
+                                style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
                             <button onclick="applyPromoCode()"
-                                style="padding:10px 18px;background:#222;color:#fff;border:none;
-                                       border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;
-                                       white-space:nowrap;">
+                                style="padding:10px 18px;background:#222;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">
                                 Apply
                             </button>
                         </div>
@@ -286,6 +356,8 @@
 
                     <button class="btn-pay" onclick="processPayment()">REVIEW AND PAY</button>
                 </div>
+
+                <!-- SUMMARY -->
                 <div class="checkout-summary-section">
                     <div class="summary-card">
                         <h4>Order Summary</h4>

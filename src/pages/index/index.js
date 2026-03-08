@@ -15,11 +15,17 @@ function getUsers() {
     return JSON.parse(localStorage.getItem('users')) || [];
 }
 
-/* Lấy products (global array đã được init bởi initilization.js) */
-function getProducts() {
-    return products; // initilization.js đã load từ localStorage rồi
+/* ID tự tăng: lấy max id hiện có + 1 — đồng bộ với initilization.js (id: 1,2,3...) */
+function generateUserId() {
+    const users = getUsers();
+    if (users.length === 0) return 1;
+    return Math.max(...users.map(u => Number(u.id) || 0)) + 1;
 }
 
+/* Products — initilization.js đã load từ localStorage vào global products[] */
+function getProducts() {
+    return products;
+}
 function saveProducts() {
     localStorage.setItem('products', JSON.stringify(products));
 }
@@ -163,8 +169,9 @@ document.getElementById('register-form').addEventListener('submit', function(e) 
     const inputs   = this.querySelectorAll('input:not([type="submit"])');
     const name     = inputs[0].value.trim();
     const email    = inputs[1].value.trim();
-    const password = inputs[2].value;
-    const confirm  = inputs[3].value;
+    const phone    = inputs[2].value.trim();
+    const password = inputs[3].value;
+    const confirm  = inputs[4].value;
 
     if (password !== confirm) { alert('Passwords do not match!'); return; }
 
@@ -175,7 +182,7 @@ document.getElementById('register-form').addEventListener('submit', function(e) 
     }
 
     const newUser = {
-        id: Date.now(), name, email, password,
+        id: generateUserId(), name, email, phone, password,
         role: 'customer', status: 'active',
         address: [], cart: [], orders: []
     };
@@ -570,7 +577,6 @@ function handleAddToCartLogic(product) {
     });
 
     function addToCart(isBuyNow) {
-        // ✅ KIỂM TRA ĐĂNG NHẬP
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (!currentUser) {
             if (confirm('Bạn cần đăng nhập để thêm vào giỏ hàng.\nNhấn OK để đăng nhập.')) {
@@ -579,28 +585,38 @@ function handleAddToCartLogic(product) {
             return;
         }
 
-        // ✅ KIỂM TRA SIZE
-        if (!selectedSize) {
-            alert('Vui lòng chọn size trước!');
+        if (!selectedSize) { alert('Vui lòng chọn size trước!'); return; }
+
+        // ✅ KIỂM TRA TỒN KHO TRƯỚC KHI THÊM
+        const pIdx = products.findIndex(p => p.id === product.id);
+        if (pIdx === -1) return;
+        const currentStock = products[pIdx].amount ?? 0;
+
+        // Tính số lượng item này đang có trong cart
+        const cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+        const existIdx = cart.findIndex(i =>
+            i.id === product.id && i.size === selectedSize && i.color === selectedColor
+        );
+        const qtyInCart = existIdx !== -1 ? cart[existIdx].quantity : 0;
+
+        if (currentStock <= 0) {
+            showToast('<span>❌ Sản phẩm đã hết hàng!</span>', 'error', 3000);
             return;
         }
 
-        const cartItem = {
+        // ✅ THÊM VÀO CART
+        if (existIdx !== -1) cart[existIdx].quantity += 1;
+        else cart.push({
             id: product.id, name: product.name, price: product.price,
             image: product.image, size: selectedSize, color: selectedColor, quantity: 1
-        };
-
-        let cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
-        const existIdx = cart.findIndex(item =>
-            item.id === cartItem.id && item.size === cartItem.size && item.color === cartItem.color
-        );
-        if (existIdx !== -1) cart[existIdx].quantity += 1;
-        else cart.push(cartItem);
-
+        });
         localStorage.setItem('shoppingCart', JSON.stringify(cart));
-
-        // ✅ SYNC VÀO users[].cart
         syncCartToUser();
+
+        // ✅ TRỪ AMOUNT NGAY KHI THÊM VÀO GIỎ
+        products[pIdx].amount = currentStock - 1;
+        saveProducts();
+        renderProductGrid();
 
         updateCartIconCount();
         cartBottom.renderCart();
@@ -608,7 +624,6 @@ function handleAddToCartLogic(product) {
         if (isBuyNow) {
             showPage('page-cart');
         } else {
-            // Show toast instead of opening mini cart panel
             showCartToast(product, selectedSize, selectedColor);
         }
     }
@@ -634,12 +649,16 @@ function toggleFilter(type, value, element) {
             ? state.filters.brands = state.filters.brands.filter(i => i !== value)
             : state.filters.brands.push(value);
     } else if (type === 'size') {
+        const alreadyActive = state.filters.sizes.includes(value);
+        // Toggle active class trên đúng button
         document.querySelectorAll('.filter-size-btn').forEach(btn => {
-            if (parseInt(btn.innerText) === value) btn.classList.toggle('active');
+            if (parseInt(btn.innerText) === value) {
+                btn.classList.toggle('active', !alreadyActive);
+            }
         });
-        state.filters.sizes.includes(value)
-            ? state.filters.sizes = state.filters.sizes.filter(i => i !== value)
-            : state.filters.sizes.push(value);
+        state.filters.sizes = alreadyActive
+            ? state.filters.sizes.filter(i => i !== value)
+            : [...state.filters.sizes, value];
     } else if (type === 'color') {
         if (element) element.classList.toggle('active');
         state.filters.colors.includes(value)
@@ -661,8 +680,12 @@ function getFilteredProducts() {
     return products.filter(p => {
         const brandMatch = state.filters.brands.length === 0 || state.filters.brands.includes(p.brand);
         const priceMatch = p.price <= state.filters.maxPrice;
-        const sizeMatch  = state.filters.sizes.length === 0 || state.filters.sizes.some(s => p.sizes.map(sz => sz.val).includes(s));
-        const colorMatch = state.filters.colors.length === 0 || state.filters.colors.some(c => p.colors.map(co => co.hex).includes(c));
+        const sizeMatch  = state.filters.sizes.length === 0 ||
+            state.filters.sizes.some(s => p.sizes.map(sz => sz.val).includes(s));
+        const colorMatch = state.filters.colors.length === 0 ||
+            state.filters.colors.some(fc =>
+                p.colors.some(co => co.hex.toLowerCase() === fc.toLowerCase())
+            );
         return brandMatch && priceMatch && sizeMatch && colorMatch;
     });
 }
@@ -693,7 +716,7 @@ function renderProductGrid() {
         card.className = 'product-card';
         card.onclick   = () => renderProductDetail(product, true);
 
-        const stock     = product.amount ?? 0;
+        const stock      = product.amount ?? 0;
         const stockColor = stock === 0 ? '#e74c3c' : stock <= 5 ? '#f39c12' : '#27ae60';
         const stockLabel = stock === 0 ? 'Out of stock' : `In stock: ${stock}`;
 
@@ -705,10 +728,9 @@ function renderProductGrid() {
             <div class="card-info">
                 <div class="card-title">${product.name}</div>
                 <div class="card-price">$${product.price.toFixed(2)}</div>
-                <div class="stock-badge" style="
-                    display:inline-block; margin-bottom:8px;
-                    padding:3px 10px; border-radius:20px; font-size:12px; font-weight:700;
-                    background:${stockColor}22; color:${stockColor}; border:1px solid ${stockColor}44;">
+                <div style="display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:20px;
+                            font-size:12px;font-weight:700;background:${stockColor}22;
+                            color:${stockColor};border:1px solid ${stockColor}44;">
                     ${stockLabel}
                 </div>
                 <button class="btn-view" ${stock === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>View Product</button>
@@ -895,20 +917,57 @@ function renderQtyOptions(selected) {
 
 function updateQuantity(index, newQty) {
     let cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    const item    = cart[index];
+    const oldQty  = item.quantity;
+    const diff    = parseInt(newQty) - oldQty; // dương = thêm, âm = bớt
+
+    // Kiểm tra stock nếu tăng qty
+    if (diff > 0) {
+        const pIdx = products.findIndex(p => p.id === item.id);
+        if (pIdx !== -1 && (products[pIdx].amount ?? 0) < diff) {
+            showToast(`<span>❌ Chỉ còn ${products[pIdx].amount ?? 0} sản phẩm trong kho!</span>`, 'error', 3000);
+            renderCart(); // reset select về cũ
+            return;
+        }
+        // Trừ thêm amount
+        if (pIdx !== -1) {
+            products[pIdx].amount = Math.max(0, (products[pIdx].amount ?? 0) - diff);
+            saveProducts();
+        }
+    } else if (diff < 0) {
+        // Hoàn trả amount
+        const pIdx = products.findIndex(p => p.id === item.id);
+        if (pIdx !== -1) {
+            products[pIdx].amount = (products[pIdx].amount ?? 0) + Math.abs(diff);
+            saveProducts();
+        }
+    }
+
     cart[index].quantity = parseInt(newQty);
     localStorage.setItem('shoppingCart', JSON.stringify(cart));
-    syncCartToUser(); // ✅ sync
+    syncCartToUser();
     renderCart();
     updateCartSummary();
+    renderProductGrid();
 }
 
 function removeItem(index) {
     let cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    const item = cart[index];
+
+    // ✅ HOÀN TRẢ AMOUNT
+    const pIdx = products.findIndex(p => p.id === item.id);
+    if (pIdx !== -1) {
+        products[pIdx].amount = (products[pIdx].amount ?? 0) + item.quantity;
+        saveProducts();
+    }
+
     cart.splice(index, 1);
     localStorage.setItem('shoppingCart', JSON.stringify(cart));
-    syncCartToUser(); // ✅ sync
+    syncCartToUser();
     renderCart();
     updateCartSummary();
+    renderProductGrid();
 }
 
 function updateCartSummary() {
@@ -932,18 +991,45 @@ function updateCartSummary() {
 /* ============================================================
    16. CHECKOUT SLIDE
 ============================================================ */
-let checkoutSelectedAddressIndex = -1; // -1 = using new address form
-let checkoutDeliveryMode = 'standard'; // 'standard' | 'collect'
-let checkoutAppliedPromo = null;       // { code, type, value, desc } | null
+let checkoutSelectedAddressIndex = -1;
+let checkoutDeliveryMode  = 'standard';
+let checkoutAppliedPromo  = null;
+let checkoutPaymentMethod = 'card'; // 'card' | 'cod' | 'momo' | 'zalopay' | 'bank'
+
+const PAYMENT_METHODS = ['card', 'cod', 'momo', 'zalopay', 'bank'];
+
+/* ---- Payment Method ---- */
+function selectPaymentMethod(method) {
+    checkoutPaymentMethod = method;
+    PAYMENT_METHODS.forEach(m => {
+        const btn = document.getElementById(`pay-${m}`);
+        const frm = document.getElementById(`pf-${m}`);
+        if (btn) btn.classList.toggle('selected', m === method);
+        if (frm) frm.style.display = m === method ? 'block' : 'none';
+    });
+}
+
+/* ---- Card number format: 1234 5678 9012 3456 ---- */
+function fmtCard(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 16);
+    el.value = v.replace(/(.{4})/g, '$1 ').trim();
+}
+
+/* ---- Expiry format: MM/YY ---- */
+function fmtExpiry(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 4);
+    if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+    el.value = v;
+}
 
 function openCheckoutSlide() {
     const cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
     if (cart.length === 0) { alert('Giỏ hàng trống!'); return; }
 
-    // Reset về -1 mỗi lần mở → renderCheckoutAddressSection sẽ chọn default
     checkoutSelectedAddressIndex = -1;
     checkoutDeliveryMode = 'standard';
     checkoutAppliedPromo = null;
+    checkoutPaymentMethod = 'card';
 
     renderCheckoutMiniItems(cart);
     renderCheckoutAddressSection();
@@ -1098,10 +1184,7 @@ function applyPromoCode() {
     const feedback = document.getElementById('promo-feedback');
     const code     = input?.value.trim().toUpperCase();
 
-    if (!code) {
-        feedback.innerHTML = '<span style="color:#e74c3c;">Vui lòng nhập mã.</span>';
-        return;
-    }
+    if (!code) { feedback.innerHTML = '<span style="color:#e74c3c;">Vui lòng nhập mã.</span>'; return; }
 
     const promoCodes = JSON.parse(localStorage.getItem('promoCodes')) || [];
     const promo = promoCodes.find(p => p.code === code);
@@ -1109,13 +1192,13 @@ function applyPromoCode() {
     if (!promo) {
         feedback.innerHTML = '<span style="color:#e74c3c;">❌ Mã không hợp lệ.</span>';
         checkoutAppliedPromo = null;
+        updateCheckoutTotals();
         return;
     }
 
     checkoutAppliedPromo = promo;
     feedback.innerHTML = `<span style="color:#27ae60;">✓ ${promo.desc}
-        <span onclick="removePromoCode()"
-              style="margin-left:8px;color:#e74c3c;cursor:pointer;font-weight:700;">[✕ Remove]</span>
+        <span onclick="removePromoCode()" style="margin-left:8px;color:#e74c3c;cursor:pointer;font-weight:700;">[✕ Remove]</span>
     </span>`;
     updateCheckoutTotals();
     showToast(`<div class="kicks-toast-body"><span class="kicks-toast-title">🎉 Promo applied!</span><span class="kicks-toast-msg">${promo.desc}</span></div>`, 'success', 3000);
@@ -1130,7 +1213,6 @@ function removePromoCode() {
     updateCheckoutTotals();
 }
 
-/* ---- Recalculate & update all totals in summary ---- */
 function updateCheckoutTotals() {
     const cart     = JSON.parse(localStorage.getItem('shoppingCart')) || [];
     const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -1138,27 +1220,23 @@ function updateCheckoutTotals() {
 
     let discount = 0;
     if (checkoutAppliedPromo) {
-        if (checkoutAppliedPromo.type === 'percent') {
-            discount = subtotal * (checkoutAppliedPromo.value / 100);
-        } else {
-            discount = checkoutAppliedPromo.value;
-        }
-        discount = Math.min(discount, subtotal); // không giảm quá tổng
+        discount = checkoutAppliedPromo.type === 'percent'
+            ? subtotal * (checkoutAppliedPromo.value / 100)
+            : checkoutAppliedPromo.value;
+        discount = Math.min(discount, subtotal);
     }
 
-    const total = subtotal + delivery - discount;
-
-    const elDelivery = document.getElementById('co-delivery-cost');
-    const elPromoRow = document.getElementById('co-promo-row');
+    const elDelivery     = document.getElementById('co-delivery-cost');
+    const elPromoRow     = document.getElementById('co-promo-row');
     const elPromoLabel   = document.getElementById('co-promo-label');
     const elPromoDiscount = document.getElementById('co-promo-discount');
-    const elTotal    = document.getElementById('co-final-total');
+    const elTotal        = document.getElementById('co-final-total');
 
-    if (elDelivery) elDelivery.innerText = delivery === 0 ? 'Free' : `$${delivery.toFixed(2)}`;
-    if (elPromoRow) elPromoRow.style.display = checkoutAppliedPromo ? 'flex' : 'none';
+    if (elDelivery)      elDelivery.innerText = delivery === 0 ? 'Free' : `$${delivery.toFixed(2)}`;
+    if (elPromoRow)      elPromoRow.style.display = checkoutAppliedPromo ? 'flex' : 'none';
     if (elPromoLabel && checkoutAppliedPromo) elPromoLabel.innerText = checkoutAppliedPromo.code;
     if (elPromoDiscount) elPromoDiscount.innerText = `-$${discount.toFixed(2)}`;
-    if (elTotal) elTotal.innerText = `$${Math.max(0, total).toFixed(2)}`;
+    if (elTotal)         elTotal.innerText = `$${Math.max(0, subtotal + delivery - discount).toFixed(2)}`;
 }
 
 function renderCheckoutMiniItems(cart) {
@@ -1203,6 +1281,18 @@ function processPayment() {
 
     const cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
     if (cart.length === 0) { alert('Giỏ hàng trống!'); return; }
+
+    // ✅ VALIDATE PAYMENT METHOD
+    if (checkoutPaymentMethod === 'card') {
+        const num  = document.getElementById('card-number')?.value.replace(/\s/g,'') || '';
+        const exp  = document.getElementById('card-expiry')?.value || '';
+        const cvv  = document.getElementById('card-cvv')?.value || '';
+        const name = document.getElementById('card-name')?.value.trim() || '';
+        if (num.length < 16)          { showToast('<span>❌ Số thẻ không hợp lệ!</span>', 'error'); return; }
+        if (!/^\d{2}\/\d{2}$/.test(exp)) { showToast('<span>❌ Ngày hết hạn không hợp lệ!</span>', 'error'); return; }
+        if (cvv.length < 3)           { showToast('<span>❌ CVV không hợp lệ!</span>', 'error'); return; }
+        if (!name)                    { showToast('<span>❌ Vui lòng nhập tên chủ thẻ!</span>', 'error'); return; }
+    }
 
     // ✅ RESOLVE SHIPPING ADDRESS
     const users   = getUsers();
@@ -1258,6 +1348,7 @@ function processPayment() {
         totalPrice:      total,
         status:          'Pending',
         deliveryMode:    checkoutDeliveryMode,
+        paymentMethod:   checkoutPaymentMethod,
         shippingAddress
     };
 
@@ -1274,14 +1365,7 @@ function processPayment() {
         localStorage.setItem('users', JSON.stringify(users));
     }
 
-    // ✅ TRỪ AMOUNT SẢN PHẨM theo số lượng đã mua
-    cart.forEach(cartItem => {
-        const pIdx = products.findIndex(p => p.id === cartItem.id);
-        if (pIdx !== -1) {
-            products[pIdx].amount = Math.max(0, (products[pIdx].amount ?? 0) - cartItem.quantity);
-        }
-    });
-    saveProducts(); // Lưu lại vào localStorage
+    // Amount đã được trừ khi addToCart — không trừ lại ở đây
 
     localStorage.removeItem('shoppingCart');
 
@@ -1290,7 +1374,7 @@ function processPayment() {
     updateCartSummary();
     cartBottom.renderCart();
     updateCartIconCount();
-    renderProductGrid(); // Cập nhật stock badge trên grid
+    renderProductGrid(); // Cập nhật stock badge
 
     showToast(`
         <div class="kicks-toast-body">
@@ -1322,7 +1406,6 @@ document.getElementById('auth-modal').addEventListener('click', function(e) {
    18. INIT
 ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-    // initilization.js đã load products[] từ localStorage trước khi script này chạy
     loadCartFromUser();      // Load cart của user đang đăng nhập
     updateHeaderGreeting();
     updateCartIconCount();

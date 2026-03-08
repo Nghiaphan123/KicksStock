@@ -177,7 +177,7 @@ const defaultUsers = [
     },
     {
         id: 5, name: "Phan Văn Nghĩa", email: "phanvann47@gmail.com",
-        phone: "", password: "12345", role: "customer", status: "active",
+        phone: "", password: "12345", role: "admin", status: "active",
         address: [], cart: [], orders: []
     }
 ];
