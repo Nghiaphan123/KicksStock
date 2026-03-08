@@ -178,7 +178,7 @@
                     <a href="#">Men ▾</a>
                     <a href="#">Women ▾</a>
                 </nav>
-                <img class="img-logo" src="https://via.placeholder.com/120x40/222222/ffffff?text=KICKS" alt="KICKS Logo" onclick="showPage('page-index')" style="cursor:pointer;">
+                <img class="img-logo" src="./../../../res/images/logoKick.png" alt="KICKS Logo" onclick="showPage('page-index')" style="cursor:pointer;">
                 <div class="user-actions" style="display:flex;align-items:center;gap:20px;">
                     <i class="fas fa-user" id="cart-page-user-icon" style="cursor:pointer;" onclick="openProfileModal()"></i>
                     <span id="cart-page-greeting" style="font-size:14px;font-weight:600;"></span>
@@ -192,7 +192,7 @@
             <div class="promo-banner">
                 <h2>Saving to celebrate</h2>
                 <p>Enjoy up to 60% off thousands of styles during the End of Year sale - while supplies last. No code needed.</p>
-                <a href="#">Join us</a> or <a href="#" onclick="openAuthModal('login');return false;">Sign-in</a>
+                
             </div>
 
             <div class="cart-layout">
@@ -210,7 +210,7 @@
                     <div class="summary-row"><span>Sales Tax</span><span>-</span></div>
                     <div class="summary-row total"><span>Total</span><span id="summary-final-total">$0.00</span></div>
                     <button class="btn-checkout">CHECKOUT</button>
-                    <a href="#" class="promo-link">Use a promo code</a>
+                 
                 </div>
             </div>
         </div>
@@ -256,22 +256,45 @@
                     <div id="checkout-address-section" class="form-group"></div>
                     <div class="form-group">
                         <h4>Delivery Options</h4>
-                        <div class="delivery-option selected">
+                        <div class="delivery-option selected" id="delivery-standard" onclick="selectDelivery('standard')">
                             <div class="d-info"><span class="d-title">Standard Delivery</span><span class="d-desc">Enter your address to see when you'll get your order</span></div>
                             <span class="d-price">$6.00</span>
                         </div>
-                        <div class="delivery-option">
+                        <div class="delivery-option" id="delivery-collect" onclick="selectDelivery('collect')">
                             <div class="d-info"><span class="d-title">Collect in store</span><span class="d-desc">Pay now, collect in store</span></div>
                             <span class="d-price">Free</span>
                         </div>
                     </div>
+
+                    <!-- PROMO CODE -->
+                    <div class="form-group" id="promo-section">
+                        <h4>Promo Code</h4>
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" id="promo-input" class="input-field"
+                                placeholder="Enter promo code"
+                                style="flex:1;text-transform:uppercase;"
+                                oninput="this.value=this.value.toUpperCase()">
+                            <button onclick="applyPromoCode()"
+                                style="padding:10px 18px;background:#222;color:#fff;border:none;
+                                       border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;
+                                       white-space:nowrap;">
+                                Apply
+                            </button>
+                        </div>
+                        <div id="promo-feedback" style="font-size:13px;margin-top:6px;min-height:18px;"></div>
+                    </div>
+
                     <button class="btn-pay" onclick="processPayment()">REVIEW AND PAY</button>
                 </div>
                 <div class="checkout-summary-section">
                     <div class="summary-card">
                         <h4>Order Summary</h4>
                         <div class="summary-row"><span id="co-total-items">0 ITEM</span><span id="co-subtotal">$0.00</span></div>
-                        <div class="summary-row"><span>Delivery</span><span>$6.00</span></div>
+                        <div class="summary-row"><span>Delivery</span><span id="co-delivery-cost">$6.00</span></div>
+                        <div class="summary-row" id="co-promo-row" style="display:none;color:#27ae60;">
+                            <span id="co-promo-label">Promo</span>
+                            <span id="co-promo-discount">-$0.00</span>
+                        </div>
                         <div class="summary-row total"><span>Total</span><span id="co-final-total">$0.00</span></div>
                     </div>
                     <div class="details-card"><h4>Order Details</h4><div id="checkout-items-list"></div></div>
@@ -368,4 +391,4 @@
 <script src="./../../globals/initilization.js" > </script>
 <script src="index.js"></script>
 </body>
-</html> 
+</html>

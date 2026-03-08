@@ -143,19 +143,9 @@ let products = [
 
 /* ============================================================
    2. KHỞI TẠO DỮ LIỆU MẪU VÀO LOCALSTORAGE (chỉ lần đầu)
-      Nếu đã có → load lại vào products[] để giữ amount đã trừ
 ============================================================ */
-const _storedProducts = localStorage.getItem('products');
-if (!_storedProducts) {
-    // Lần đầu tiên: lưu data gốc xuống
+if (!localStorage.getItem('products')) {
     localStorage.setItem('products', JSON.stringify(products));
-} else {
-    // Đã có → load lại vào global array để giữ amount đã trừ sau mỗi đơn hàng
-    const _parsed = JSON.parse(_storedProducts);
-    if (Array.isArray(_parsed) && _parsed.length > 0) {
-        products.length = 0;
-        _parsed.forEach(p => products.push(p));
-    }
 }
 
 const defaultUsers = [
@@ -195,4 +185,21 @@ const defaultUsers = [
 if (!localStorage.getItem('users')) {
     localStorage.setItem('users', JSON.stringify(defaultUsers));
     console.log("Đã khởi tạo dữ liệu người dùng.");
+}
+
+/* ============================================================
+   PROMO CODES
+   type: 'percent' → giảm % | 'fixed' → giảm số tiền cố định
+============================================================ */
+const defaultPromoCodes = [
+    { code: 'KICKS10',   type: 'percent', value: 10,  desc: '10% off your order'      },
+    { code: 'KICKS20',   type: 'percent', value: 20,  desc: '20% off your order'      },
+    { code: 'SAVE15',    type: 'fixed',   value: 15,  desc: '$15 off your order'       },
+    { code: 'FREESHIP',  type: 'fixed',   value: 6,   desc: 'Free standard delivery'  },
+    { code: 'NEWUSER',   type: 'percent', value: 30,  desc: '30% off for new users'   },
+    { code: 'SUMMER50',  type: 'fixed',   value: 50,  desc: '$50 off orders over $200' },
+];
+
+if (!localStorage.getItem('promoCodes')) {
+    localStorage.setItem('promoCodes', JSON.stringify(defaultPromoCodes));
 }

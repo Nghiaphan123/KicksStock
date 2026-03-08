@@ -933,6 +933,8 @@ function updateCartSummary() {
    16. CHECKOUT SLIDE
 ============================================================ */
 let checkoutSelectedAddressIndex = -1; // -1 = using new address form
+let checkoutDeliveryMode = 'standard'; // 'standard' | 'collect'
+let checkoutAppliedPromo = null;       // { code, type, value, desc } | null
 
 function openCheckoutSlide() {
     const cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
@@ -940,6 +942,8 @@ function openCheckoutSlide() {
 
     // Reset về -1 mỗi lần mở → renderCheckoutAddressSection sẽ chọn default
     checkoutSelectedAddressIndex = -1;
+    checkoutDeliveryMode = 'standard';
+    checkoutAppliedPromo = null;
 
     renderCheckoutMiniItems(cart);
     renderCheckoutAddressSection();
@@ -1080,6 +1084,83 @@ function closeCheckout() {
     document.body.style.overflow = 'auto';
 }
 
+/* ---- Delivery Option Selection ---- */
+function selectDelivery(mode) {
+    checkoutDeliveryMode = mode;
+    document.getElementById('delivery-standard').classList.toggle('selected', mode === 'standard');
+    document.getElementById('delivery-collect').classList.toggle('selected', mode === 'collect');
+    updateCheckoutTotals();
+}
+
+/* ---- Promo Code ---- */
+function applyPromoCode() {
+    const input    = document.getElementById('promo-input');
+    const feedback = document.getElementById('promo-feedback');
+    const code     = input?.value.trim().toUpperCase();
+
+    if (!code) {
+        feedback.innerHTML = '<span style="color:#e74c3c;">Vui lòng nhập mã.</span>';
+        return;
+    }
+
+    const promoCodes = JSON.parse(localStorage.getItem('promoCodes')) || [];
+    const promo = promoCodes.find(p => p.code === code);
+
+    if (!promo) {
+        feedback.innerHTML = '<span style="color:#e74c3c;">❌ Mã không hợp lệ.</span>';
+        checkoutAppliedPromo = null;
+        return;
+    }
+
+    checkoutAppliedPromo = promo;
+    feedback.innerHTML = `<span style="color:#27ae60;">✓ ${promo.desc}
+        <span onclick="removePromoCode()"
+              style="margin-left:8px;color:#e74c3c;cursor:pointer;font-weight:700;">[✕ Remove]</span>
+    </span>`;
+    updateCheckoutTotals();
+    showToast(`<div class="kicks-toast-body"><span class="kicks-toast-title">🎉 Promo applied!</span><span class="kicks-toast-msg">${promo.desc}</span></div>`, 'success', 3000);
+}
+
+function removePromoCode() {
+    checkoutAppliedPromo = null;
+    const input    = document.getElementById('promo-input');
+    const feedback = document.getElementById('promo-feedback');
+    if (input)    input.value = '';
+    if (feedback) feedback.innerHTML = '';
+    updateCheckoutTotals();
+}
+
+/* ---- Recalculate & update all totals in summary ---- */
+function updateCheckoutTotals() {
+    const cart     = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const delivery = checkoutDeliveryMode === 'collect' ? 0 : 6.00;
+
+    let discount = 0;
+    if (checkoutAppliedPromo) {
+        if (checkoutAppliedPromo.type === 'percent') {
+            discount = subtotal * (checkoutAppliedPromo.value / 100);
+        } else {
+            discount = checkoutAppliedPromo.value;
+        }
+        discount = Math.min(discount, subtotal); // không giảm quá tổng
+    }
+
+    const total = subtotal + delivery - discount;
+
+    const elDelivery = document.getElementById('co-delivery-cost');
+    const elPromoRow = document.getElementById('co-promo-row');
+    const elPromoLabel   = document.getElementById('co-promo-label');
+    const elPromoDiscount = document.getElementById('co-promo-discount');
+    const elTotal    = document.getElementById('co-final-total');
+
+    if (elDelivery) elDelivery.innerText = delivery === 0 ? 'Free' : `$${delivery.toFixed(2)}`;
+    if (elPromoRow) elPromoRow.style.display = checkoutAppliedPromo ? 'flex' : 'none';
+    if (elPromoLabel && checkoutAppliedPromo) elPromoLabel.innerText = checkoutAppliedPromo.code;
+    if (elPromoDiscount) elPromoDiscount.innerText = `-$${discount.toFixed(2)}`;
+    if (elTotal) elTotal.innerText = `$${Math.max(0, total).toFixed(2)}`;
+}
+
 function renderCheckoutMiniItems(cart) {
     const container = document.getElementById('checkout-items-list');
     if (!container) return;
@@ -1100,10 +1181,10 @@ function renderCheckoutMiniItems(cart) {
     });
 
     container.innerHTML = html;
-    const shipping = 6.00;
-    document.getElementById('co-total-items').innerText  = `${cart.length} ITEMS`;
-    document.getElementById('co-subtotal').innerText     = `$${subtotal.toFixed(2)}`;
-    document.getElementById('co-final-total').innerText  = `$${(subtotal + shipping).toFixed(2)}`;
+    const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
+    document.getElementById('co-total-items').innerText = `${itemCount} ITEM${itemCount !== 1 ? 'S' : ''}`;
+    document.getElementById('co-subtotal').innerText    = `$${subtotal.toFixed(2)}`;
+    updateCheckoutTotals();
 }
 
 function generateOrderId() {
@@ -1153,7 +1234,15 @@ function processPayment() {
     }
 
     const subtotal = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
-    const total    = subtotal + 6.00;
+    const delivery = checkoutDeliveryMode === 'collect' ? 0 : 6.00;
+    let   discount = 0;
+    if (checkoutAppliedPromo) {
+        discount = checkoutAppliedPromo.type === 'percent'
+            ? subtotal * (checkoutAppliedPromo.value / 100)
+            : checkoutAppliedPromo.value;
+        discount = Math.min(discount, subtotal);
+    }
+    const total = Math.max(0, subtotal + delivery - discount);
 
     const newOrder = {
         orderId:         generateOrderId(),
@@ -1162,8 +1251,13 @@ function processPayment() {
         email:           document.getElementById('checkout-email')?.value || currentUser.email || 'No Email',
         date:            new Date().toISOString(),
         items:           cart,
+        subtotal,
+        delivery,
+        discount,
+        promoCode:       checkoutAppliedPromo?.code || null,
         totalPrice:      total,
         status:          'Pending',
+        deliveryMode:    checkoutDeliveryMode,
         shippingAddress
     };
 

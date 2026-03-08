@@ -118,3 +118,41 @@ body {
   background: linear-gradient(135deg, #0056b3, #004080);
   transform: translateY(-2px);
 }
+/* Tel input — đồng bộ với text/email/password */
+.auth-box input[type="tel"] {
+  width: 90%;
+  padding: 12px 20px;
+  margin-bottom: 18px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  outline: none;
+}
+.auth-box input[type="tel"]:focus {
+  border-color: #007bff;
+  background-color: #fff;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+}
+
+/* Role select dropdown */
+.auth-box .role-select {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 18px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  font-size: 15px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #555;
+}
+.auth-box .role-select:focus {
+  border-color: #007bff;
+  background-color: #fff;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+}

@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KICKS Auth</title>
+  <title>KICKS Admin — Auth</title>
 
   <link rel="stylesheet" href="style.css" />
 
+  <script src="./../../globals/initilization.js" defer></script>
   <script src="auth.js" defer></script>
 </head>
 <body>
@@ -19,16 +20,17 @@
     <!-- Right Section with Login/Register -->
     <div class="right-section">
       <div class="auth-box">
+
         <!-- Login Form -->
         <div class="login-container" id="login-container">
-          <h2>Login</h2>
+          <h2>Admin Login</h2>
           <a href="#">Forgot your password?</a>
           <form id="login-form">
             <input type="email" placeholder="Email" required />
             <input type="password" placeholder="Password" required />
             <input type="submit" value="Login" />
           </form>
-          <p>Don't have an account? 
+          <p>Don't have an account?
             <button class="toggle-btn" onclick="toggleForm('register')">Register</button>
           </p>
         </div>
@@ -37,16 +39,23 @@
         <div class="register-container hidden" id="register-container">
           <h2>Register</h2>
           <form id="register-form">
-            <input type="text" placeholder="Full Name" required />
-            <input type="email" placeholder="Email" required />
-            <input type="password" placeholder="Password" required />
+            <input type="text"     placeholder="Full Name"     required />
+            <input type="email"    placeholder="Email"         required />
+            <input type="tel"      placeholder="Phone Number"  required />
+            <input type="password" placeholder="Password"      required />
             <input type="password" placeholder="Confirm Password" required />
+            <select id="register-role" class="role-select" required>
+              <option value="" disabled selected>-- Select Role --</option>
+              <option value="admin">Admin</option>
+              <option value="customer">Customer</option>
+            </select>
             <input type="submit" value="Register" />
           </form>
-          <p>Already have an account? 
+          <p>Already have an account?
             <button class="toggle-btn" onclick="toggleForm('login')">Login</button>
           </p>
         </div>
+
       </div>
     </div>
   </div>
