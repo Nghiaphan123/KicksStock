@@ -143,9 +143,19 @@ let products = [
 
 /* ============================================================
    2. KHỞI TẠO DỮ LIỆU MẪU VÀO LOCALSTORAGE (chỉ lần đầu)
+      Nếu đã có → load lại vào products[] để giữ amount đã trừ
 ============================================================ */
-if (!localStorage.getItem('products')) {
+const _storedProducts = localStorage.getItem('products');
+if (!_storedProducts) {
+    // Lần đầu tiên: lưu data gốc xuống
     localStorage.setItem('products', JSON.stringify(products));
+} else {
+    // Đã có → load lại vào global array để giữ amount đã trừ sau mỗi đơn hàng
+    const _parsed = JSON.parse(_storedProducts);
+    if (Array.isArray(_parsed) && _parsed.length > 0) {
+        products.length = 0;
+        _parsed.forEach(p => products.push(p));
+    }
 }
 
 const defaultUsers = [

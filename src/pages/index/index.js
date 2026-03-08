@@ -15,6 +15,15 @@ function getUsers() {
     return JSON.parse(localStorage.getItem('users')) || [];
 }
 
+/* Lấy products (global array đã được init bởi initilization.js) */
+function getProducts() {
+    return products; // initilization.js đã load từ localStorage rồi
+}
+
+function saveProducts() {
+    localStorage.setItem('products', JSON.stringify(products));
+}
+
 /* ============================================================
    4. CART ↔ USER SYNC
 ============================================================ */
@@ -494,6 +503,14 @@ function renderProductDetail(product, shouldScroll = false) {
         <span style="color:#888;font-size:14px;font-weight:600;text-transform:uppercase;">Men's Shoes</span>
         <h1>${product.name}</h1>
         <span class="price">$${product.price.toFixed(2)}</span>
+        <div style="margin:10px 0;">
+            ${(() => {
+                const stock = product.amount ?? 0;
+                const color = stock === 0 ? '#e74c3c' : stock <= 5 ? '#f39c12' : '#27ae60';
+                const label = stock === 0 ? '✕ Out of stock' : stock <= 5 ? `⚠ Only ${stock} left!` : `✓ In stock (${stock})`;
+                return `<span style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;background:${color}18;color:${color};border:1px solid ${color}44;">${label}</span>`;
+            })()}
+        </div>
         <div style="margin-top:20px;">
             <span class="label">Color</span>
             <div class="color-options">${colorsHtml}</div>
@@ -506,10 +523,10 @@ function renderProductDetail(product, shouldScroll = false) {
             <div class="size-grid">${sizesHtml}</div>
         </div>
         <div class="btn-group">
-            <button id="btn-add-to-cart" class="btn btn-black">Add To Cart</button>
+            <button id="btn-add-to-cart" class="btn btn-black" ${(product.amount ?? 0) === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>Add To Cart</button>
             <button class="btn btn-fav"><i class="far fa-heart"></i></button>
         </div>
-        <button id="btn-buy-now" class="btn btn-blue" style="width:100%">Buy It Now</button>
+        <button id="btn-buy-now" class="btn btn-blue" style="width:100%" ${(product.amount ?? 0) === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>Buy It Now</button>
         <div class="description">
             ${product.description}<br><br>
             This product is excluded from all promotional discounts and offers.
@@ -674,7 +691,12 @@ function renderProductGrid() {
     pageProducts.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
-        card.onclick   = () => renderProductDetail(product, true); // scroll khi click
+        card.onclick   = () => renderProductDetail(product, true);
+
+        const stock     = product.amount ?? 0;
+        const stockColor = stock === 0 ? '#e74c3c' : stock <= 5 ? '#f39c12' : '#27ae60';
+        const stockLabel = stock === 0 ? 'Out of stock' : `In stock: ${stock}`;
+
         card.innerHTML = `
             <div class="card-img">
                 <span class="card-badge">${product.tag}</span>
@@ -683,7 +705,13 @@ function renderProductGrid() {
             <div class="card-info">
                 <div class="card-title">${product.name}</div>
                 <div class="card-price">$${product.price.toFixed(2)}</div>
-                <button class="btn-view">View Product</button>
+                <div class="stock-badge" style="
+                    display:inline-block; margin-bottom:8px;
+                    padding:3px 10px; border-radius:20px; font-size:12px; font-weight:700;
+                    background:${stockColor}22; color:${stockColor}; border:1px solid ${stockColor}44;">
+                    ${stockLabel}
+                </div>
+                <button class="btn-view" ${stock === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>View Product</button>
             </div>`;
         grid.appendChild(card);
     });
@@ -1152,6 +1180,15 @@ function processPayment() {
         localStorage.setItem('users', JSON.stringify(users));
     }
 
+    // ✅ TRỪ AMOUNT SẢN PHẨM theo số lượng đã mua
+    cart.forEach(cartItem => {
+        const pIdx = products.findIndex(p => p.id === cartItem.id);
+        if (pIdx !== -1) {
+            products[pIdx].amount = Math.max(0, (products[pIdx].amount ?? 0) - cartItem.quantity);
+        }
+    });
+    saveProducts(); // Lưu lại vào localStorage
+
     localStorage.removeItem('shoppingCart');
 
     closeCheckout();
@@ -1159,6 +1196,7 @@ function processPayment() {
     updateCartSummary();
     cartBottom.renderCart();
     updateCartIconCount();
+    renderProductGrid(); // Cập nhật stock badge trên grid
 
     showToast(`
         <div class="kicks-toast-body">
@@ -1190,6 +1228,7 @@ document.getElementById('auth-modal').addEventListener('click', function(e) {
    18. INIT
 ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
+    // initilization.js đã load products[] từ localStorage trước khi script này chạy
     loadCartFromUser();      // Load cart của user đang đăng nhập
     updateHeaderGreeting();
     updateCartIconCount();
