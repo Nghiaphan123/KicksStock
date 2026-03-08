@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="../global/sidebar.css" />
     <link rel="stylesheet" href="style.css" />
     <script src="../global/sidebar.js" defer></script>
-    <script src="products.js" defer></script>
+    <script src="promo.js" defer></script>
     <script src="../../globals/initilization.js" defer></script>
 </head>
 <body>
@@ -28,18 +28,16 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <div class="products-header">
-        <h1>All Products</h1>
-        <button class="add-product-btn">ADD NEW PRODUCT</button>
-      </div>
 
-      <div class="product-grid" id="product-grid">
-        <!-- Product cards will be injected here -->
-      </div>
+      <div class="promo-container">
+        <div class="promo-header">
+            <h1>All Promo Codes</h1>
+            <button id="add-promo-btn">+</button>
+        </div>
+        <div id="promo-list"></div>
+    </div>
 
-      <div class="pagination" id="pagination">
-        <!-- Pagination buttons will be injected here -->
-      </div>
+
     </main>
   </div>
 </body>

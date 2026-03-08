@@ -12,7 +12,7 @@ function openOrderPanel(order) {
     <div class="order-item-card">
       <div class="item-info">
         <div class="item-name">${item.name}</div>
-        <div class="item-qty">Qty: ${item.amount || 1}</div>
+        <div class="item-qty">Qty: ${item.quantity || 1}</div>
       </div>
     </div>
   `).join("");
