@@ -156,3 +156,39 @@ body {
   background-color: #fff;
   box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
 }
+.status.pending {
+  background-color: #fff3cd; 
+  color: #856404;
+}
+
+.status.done {
+  background-color: #d4edda; 
+  color: #155724;
+}
+
+.status.canceled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+.o-status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.o-status.done {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.o-status.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.o-status.canceled {
+  background-color: #f8d7da;
+  color: #721c24;
+}

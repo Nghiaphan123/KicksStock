@@ -7,6 +7,13 @@ function getUsers() {
     return JSON.parse(localStorage.getItem('users')) || [];
 }
 
+/* ID tự tăng: lấy max id hiện có + 1 — đồng bộ với initilization.js (id: 1,2,3...) */
+function generateUserId() {
+    const users = getUsers();
+    if (users.length === 0) return 1;
+    return Math.max(...users.map(u => Number(u.id) || 0)) + 1;
+}
+
 function toggleForm(form) {
     const loginEl    = document.getElementById('login-container');
     const registerEl = document.getElementById('register-container');
@@ -51,7 +58,7 @@ document.getElementById('register-form').addEventListener('submit', function(e) 
     }
 
     const newUser = {
-        id: Date.now(), name, email, phone, password,
+        id: generateUserId(), name, email, phone, password,
         role, status: 'active',
         address: [], cart: [], orders: []
     };
