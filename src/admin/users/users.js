@@ -1,18 +1,40 @@
 const ITEMS_PER_PAGE = 12;
 let currentPage = 1;
 
+function getFilteredUsers() {
+  let allUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+  const idFilter = document.getElementById("filter-id").value.toLowerCase();
+  const nameFilter = document.getElementById("filter-name").value.toLowerCase();
+  const emailFilter = document.getElementById("filter-email").value.toLowerCase();
+  const phoneFilter = document.getElementById("filter-phone").value.toLowerCase();
+  const roleFilter = document.getElementById("filter-role").value;
+  const statusFilter = document.getElementById("filter-status").value;
+
+  return allUsers.filter(u => {
+    return (
+      (!idFilter || u.id.toString().toLowerCase().includes(idFilter)) &&
+      (!nameFilter || u.name.toLowerCase().includes(nameFilter)) &&
+      (!emailFilter || u.email.toLowerCase().includes(emailFilter)) &&
+      (!phoneFilter || (u.phone || "").toLowerCase().includes(phoneFilter)) &&
+      (!roleFilter || u.role === roleFilter) &&
+      (!statusFilter || u.status === statusFilter || (u.role === "admin" && statusFilter === "unchangeable"))
+    );
+  });
+}
+
 function renderUsers(users) {
   const tbody = document.getElementById("users-body");
   tbody.innerHTML = "";
 
+  const filteredUsers = getFilteredUsers();
+
   const start = (currentPage - 1) * ITEMS_PER_PAGE;
   const end = start + ITEMS_PER_PAGE;
-  const paginatedUsers = users.slice(start, end);
+  const paginatedUsers = filteredUsers.slice(start, end);
 
   paginatedUsers.forEach(u => {
     const row = document.createElement("tr");
-
-    // If role is admin, force status text to "Unchangeable"
     const statusText = u.role === "admin" ? "unchangeable" : u.status;
 
     row.innerHTML = `
@@ -21,14 +43,10 @@ function renderUsers(users) {
       <td>${u.email}</td>
       <td>${u.phone}</td>
       <td>${u.role}</td>
-      <td>
-        <span class="status ${statusText.toLowerCase()}">${statusText}</span>
-      </td>
+      <td><span class="status ${statusText.toLowerCase()}">${statusText}</span></td>
     `;
 
     const statusEl = row.querySelector(".status");
-
-    // Toggle only if role is customer
     if (u.role === "customer") {
       statusEl.style.cursor = "pointer";
       statusEl.addEventListener("click", () => {
@@ -40,7 +58,7 @@ function renderUsers(users) {
     tbody.appendChild(row);
   });
 
-  renderPagination(users);
+  renderPagination(filteredUsers);
 }
 
 function updateUserStatus(userId, newStatus) {
@@ -94,6 +112,16 @@ function renderPagination(users) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const allUsers = JSON.parse(localStorage.getItem("users")) || [];
+  renderUsers(allUsers);
+
+  document.querySelectorAll(".users-filters input, .users-filters select")
+    .forEach(el => el.addEventListener("input", () => renderUsers(allUsers)));
+});
+
+document.getElementById("clear-filters").addEventListener("click", () => {
+  document.querySelectorAll(".users-filters input, .users-filters select")
+    .forEach(el => el.value = "");
   const allUsers = JSON.parse(localStorage.getItem("users")) || [];
   renderUsers(allUsers);
 });

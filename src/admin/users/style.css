@@ -1,3 +1,66 @@
+.users-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+  align-items: center;
+}
+
+.filter-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 8px 16px 8px 30px; /* space for icon */
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.filter-group #filter-role, #filter-status {
+  padding-right: 30px;
+
+  appearance: none;           /* Removes the default browser arrow */
+  -webkit-appearance: none;    /* For Safari/Chrome */
+  -moz-appearance: none;       /* For Firefox */
+  
+  /* Add your own arrow as a background image */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px) center; /* This moves the arrow 12px from the right edge */
+  background-size: 12px;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0,123,255,0.3);
+}
+
+.clear-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 20px;
+  background: #dc3545;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.clear-btn:hover {
+  background: #c82333;
+}
+
+
+
+
+
+
 .users-wrapper {
   height: 700px;       /* fixed height */
   overflow-y: auto;        /* scroll when overflow */
