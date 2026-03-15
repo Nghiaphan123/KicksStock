@@ -71,20 +71,33 @@ function openOrderPanel(order) {
 }
 
 // Helper to update localStorage
+// Helper to update localStorage
 function updateOrderStatus(orderId, newStatus) {
+  // 1. Cập nhật allOrders
   let allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
-
-  // Find and update the order by ID
   const index = allOrders.findIndex(o => o.orderId === orderId);
+  
   if (index !== -1) {
-    allOrders[index].status = newStatus; // update status directly
+    allOrders[index].status = newStatus;
     localStorage.setItem("allOrders", JSON.stringify(allOrders));
+
+    // 2. Đồng bộ sang users[].orders — dùng == để tránh type mismatch (string vs number)
+    const targetUserId = allOrders[index].userId;
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    const userIdx = users.findIndex(u => u.id == targetUserId);
+    
+    if (userIdx !== -1) {
+      if (!Array.isArray(users[userIdx].orders)) users[userIdx].orders = [];
+      const orderIdx = users[userIdx].orders.findIndex(o => o.orderId === orderId);
+      if (orderIdx !== -1) {
+        users[userIdx].orders[orderIdx].status = newStatus;
+      }
+      localStorage.setItem("users", JSON.stringify(users));
+    }
   }
 
-  // Refresh table
   renderOrders(allOrders);
 }
-
 function renderOrders(orders) {
   const tbody = document.getElementById("orders-body");
   tbody.innerHTML = "";

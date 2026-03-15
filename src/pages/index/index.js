@@ -374,6 +374,16 @@ function switchTab(e, tabId) {
     e.currentTarget.classList.add('active');
     document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
+
+    // Re-fetch orders mỗi lần mở tab để lấy status mới nhất từ admin
+    if (tabId === 'orders') {
+        const currentUserInfo = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUserInfo) {
+            const users = getUsers();
+            const user  = users.find(u => u.id == currentUserInfo.id);
+            renderOrdersList(user?.orders || []);
+        }
+    }
 }
 
 function logoutUser() {
@@ -415,18 +425,88 @@ document.getElementById('profile-form').addEventListener('submit', function(e) {
 });
 
 // RENDER LỊCH SỬ ĐƠN HÀNG
+let _allOrdersForFilter = [];
+let _activeStatusFilter = 'all';
+
 function renderOrdersList(ordersArray) {
-    const container = document.getElementById('orders-list-container');
-    if (ordersArray.length === 0) {
+    _allOrdersForFilter = [...ordersArray].reverse();
+
+    // Build filter bar if not already present
+    const tab = document.getElementById('tab-orders');
+    if (tab && !document.getElementById('orders-filter-bar')) {
+        const bar = document.createElement('div');
+        bar.id = 'orders-filter-bar';
+        bar.className = 'orders-filter-bar';
+        bar.innerHTML = `
+            <input type="text" id="order-search-text" placeholder="🔍 Tìm tên sản phẩm..." oninput="applyOrderFilters()">
+            <input type="date" id="order-search-date" onchange="applyOrderFilters()">
+            <div class="status-filter-btns">
+                <button class="status-filter-btn active-filter" data-status="all"    onclick="setOrderStatusFilter('all')">Tất cả</button>
+                <button class="status-filter-btn"               data-status="pending" onclick="setOrderStatusFilter('pending')">🟡 Pending</button>
+                <button class="status-filter-btn"               data-status="done"    onclick="setOrderStatusFilter('done')">🟢 Done</button>
+                <button class="status-filter-btn"               data-status="canceled" onclick="setOrderStatusFilter('canceled')">🔴 Canceled</button>
+            </div>`;
+        // Insert before the orders-list-container
+        const container = document.getElementById('orders-list-container');
+        tab.insertBefore(bar, container);
+    }
+
+    // Reset filters on fresh load
+    _activeStatusFilter = 'all';
+    const textInput = document.getElementById('order-search-text');
+    const dateInput = document.getElementById('order-search-date');
+    if (textInput) textInput.value = '';
+    if (dateInput) dateInput.value = '';
+    document.querySelectorAll('.status-filter-btn').forEach(b => {
+        b.classList.toggle('active-filter', b.dataset.status === 'all');
+    });
+
+    applyOrderFilters();
+}
+
+function setOrderStatusFilter(status) {
+    _activeStatusFilter = status;
+    document.querySelectorAll('.status-filter-btn').forEach(b => {
+        b.classList.toggle('active-filter', b.dataset.status === status);
+    });
+    applyOrderFilters();
+}
+
+function applyOrderFilters() {
+    const searchText = (document.getElementById('order-search-text')?.value || '').toLowerCase().trim();
+    const searchDate = document.getElementById('order-search-date')?.value || '';
+    const container  = document.getElementById('orders-list-container');
+
+    let filtered = _allOrdersForFilter.filter(order => {
+        // Status filter
+        if (_activeStatusFilter !== 'all' && order.status.toLowerCase() !== _activeStatusFilter) return false;
+
+        // Date filter (match yyyy-mm-dd against order.date)
+        if (searchDate) {
+            const orderDate = new Date(order.date).toISOString().slice(0, 10);
+            if (orderDate !== searchDate) return false;
+        }
+
+        // Text filter: search in product names
+        if (searchText) {
+            const matched = order.items.some(item => item.name.toLowerCase().includes(searchText));
+            if (!matched) return false;
+        }
+
+        return true;
+    });
+
+    if (filtered.length === 0) {
         container.innerHTML = `
-            <div style="text-align:center;padding:30px;background:#f9f9f9;border-radius:8px;">
-                <i class="fas fa-box-open" style="font-size:36px;color:#ccc;margin-bottom:12px;display:block;"></i>
-                <p>Bạn chưa có đơn hàng nào.</p>
+            <div class="orders-empty">
+                <i class="fas fa-search" style="font-size:32px;color:#ddd;margin-bottom:12px;display:block;"></i>
+                Không tìm thấy đơn hàng nào.
             </div>`;
         return;
     }
+
     let html = '';
-    [...ordersArray].reverse().forEach(order => {
+    filtered.forEach(order => {
         let itemsHtml = '';
         order.items.forEach(item => {
             itemsHtml += `
@@ -439,7 +519,7 @@ function renderOrdersList(ordersArray) {
                 </div>`;
         });
         const dateStr     = new Date(order.date).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-        const statusClass = order.status.toLowerCase() === 'completed' ? 'completed' : 'pending';
+        const statusClass = order.status.toLowerCase();
         html += `
             <div class="order-card">
                 <div class="order-header">
