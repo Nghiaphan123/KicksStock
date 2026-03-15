@@ -66,6 +66,14 @@ product section
   transition: background 0.2s ease;
 }
 
+.low-stock-red {
+  background-color: #f8d7da; /* light red */
+}
+
+.low-stock-yellow {
+  background-color: #fff3cd; /* light yellow */
+}
+
 /* Buy button green */
 #buy-btn {
   background-color: #28a745;

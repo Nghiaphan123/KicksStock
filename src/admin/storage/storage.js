@@ -8,6 +8,9 @@ const notesPagination = document.getElementById("notes-pagination");
 
 let notesPageIndex = 1;
 const notesPerPage = 5; // show 5 notes per page
+// Global warning thresholds
+const WARNING_RED = 10;
+const WARNING_YELLOW = 15;
 
 // Render product rows
 function renderProducts() {
@@ -15,13 +18,21 @@ function renderProducts() {
     productItems.forEach(item => {
         const row = document.createElement("div");
         row.className = "product-card-row";
+
+        // Apply warning colors
+        if (item.amount < WARNING_RED) {
+            row.classList.add("low-stock-red");
+        } else if (item.amount < WARNING_YELLOW) {
+            row.classList.add("low-stock-yellow");
+        }
+
         row.innerHTML = `
-        <div>${item.id}</div>
-        <div>${item.name}</div>
-        <div>${item.amount}</div>
-        <div>$${(item.price * 0.75).toFixed(2)}</div>
-        <div><input type="number" class="add-amount" data-id="${item.id}" placeholder="Add amount" /></div>
-      `;
+          <div>${item.id}</div>
+          <div>${item.name}</div>
+          <div>${item.amount}</div>
+          <div>$${(item.price * 0.75).toFixed(2)}</div>
+          <div><input type="number" class="add-amount" data-id="${item.id}" placeholder="Add amount" /></div>
+        `;
         storageList.appendChild(row);
     });
 
@@ -30,7 +41,6 @@ function renderProducts() {
         input.addEventListener("input", calculateTotal);
     });
 }
-
 
 // Render product rows
 function renderNotes() {
