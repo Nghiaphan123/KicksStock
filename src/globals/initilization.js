@@ -203,3 +203,49 @@ const defaultPromoCodes = [
 if (!localStorage.getItem('promoCodes')) {
     localStorage.setItem('promoCodes', JSON.stringify(defaultPromoCodes));
 }
+
+// ── Seed 50 fake orders (chỉ chạy 1 lần) ──
+if (!localStorage.getItem('seedOrdersDone')) {
+    const existingOrders = JSON.parse(localStorage.getItem('allOrders')) || [];
+    const users          = JSON.parse(localStorage.getItem('users'))     || [];
+    const prods          = JSON.parse(localStorage.getItem('products'))  || [];
+
+    const statuses  = ['Done','Done','Done','Canceled','Pending'];
+    const payments  = ['cod','momo','card'];
+    const addresses = ['Thu Duc','Quan 1','Quan 7','Binh Thanh','Go Vap'];
+
+    const customerName = users[0]?.name  || 'Test User';
+    const userId       = users[0]?.id    || 1;
+    const email        = users[0]?.email || 'test@gmail.com';
+    const productList  = prods.length > 0 ? prods : [{ id:1, name:'Nike Air Max', price:150, image:'' }];
+
+    const seedOrders = [];
+    for (let i = 0; i < 50; i++) {
+        const month = Math.floor(Math.random() * 3) + 1;
+        const day   = Math.floor(Math.random() * 28) + 1;
+        const hour  = Math.floor(Math.random() * 23);
+        const min   = Math.floor(Math.random() * 59);
+        const date  = new Date(2026, month - 1, day, hour, min).toISOString();
+
+        const p     = productList[Math.floor(Math.random() * productList.length)];
+        const qty   = Math.floor(Math.random() * 3) + 1;
+        const total = +(p.price * qty).toFixed(2);
+
+        seedOrders.push({
+            orderId:         'ORD-' + Date.now() + '-' + Math.floor(Math.random()*1000) + '-' + i,
+            userId,          customerName, email, date,
+            items:           [{ id: p.id, name: p.name, price: p.price, image: p.image,
+                                size: 40 + Math.floor(Math.random()*5), color: 'Black', quantity: qty }],
+            subtotal:        total, delivery: 6, discount: 0, promoCode: null,
+            totalPrice:      total + 6,
+            status:          statuses[Math.floor(Math.random() * statuses.length)],
+            deliveryMode:    'delivery',
+            paymentMethod:   payments[Math.floor(Math.random() * payments.length)],
+            shippingAddress: addresses[Math.floor(Math.random() * addresses.length)]
+        });
+    }
+
+    localStorage.setItem('allOrders', JSON.stringify([...existingOrders, ...seedOrders]));
+    localStorage.setItem('seedOrdersDone', 'true'); // ← đánh dấu đã chạy, không chạy lại
+}
+

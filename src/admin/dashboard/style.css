@@ -81,3 +81,59 @@
   margin: 0 auto;     /* center it */
 }
 
+
+/* ── Chart filter controls ── */
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+
+.chart-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.chart-controls select {
+  padding: 7px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.chart-controls select:focus {
+  border-color: #007bff;
+}
+
+#apply-filter {
+  padding: 8px 20px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  margin-left: auto;
+}
+
+#apply-filter:hover {
+  background: #0056b3;
+}

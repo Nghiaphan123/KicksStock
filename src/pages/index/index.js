@@ -249,6 +249,9 @@ function openProfileModal() {
     document.getElementById('display-user-name').innerText = fullUser.name;
     document.getElementById('prof-name').value             = fullUser.name;
     document.getElementById('prof-email').value            = fullUser.email;
+    if (document.getElementById('prof-phone')) {
+        document.getElementById('prof-phone').value = fullUser.phone || '';
+    }
     document.getElementById('prof-password').value         = '';
 
     renderProfileAddressList(fullUser.address || []);
@@ -406,6 +409,24 @@ function logoutUser() {
 }
 
 // LƯU THÔNG TIN PROFILE (name + password only; address managed separately)
+// Toggle show/hide password
+function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.textContent = isHidden ? '🙈' : '👁';
+}
+
+// Clear password field
+function clearPw(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) { input.value = ''; input.type = 'password'; }
+    // Reset toggle btn icon
+    const wrap = input?.closest('.pw-input-wrap');
+    if (wrap) { const toggleBtn = wrap.querySelector('.pw-toggle-btn'); if (toggleBtn) toggleBtn.textContent = '👁'; }
+}
+
 document.getElementById('profile-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const currentUserInfo = JSON.parse(localStorage.getItem('currentUser'));
@@ -415,11 +436,26 @@ document.getElementById('profile-form').addEventListener('submit', function(e) {
     const idx   = users.findIndex(u => u.id === currentUserInfo.id);
     if (idx === -1) return;
 
-    const newName = document.getElementById('prof-name').value.trim();
-    const newPass = document.getElementById('prof-password').value;
+    const newName    = document.getElementById('prof-name').value.trim();
+    const newPhone   = document.getElementById('prof-phone')?.value.trim() || '';
+    const currentPw  = document.getElementById('prof-current-password')?.value || '';
+    const newPass    = document.getElementById('prof-password').value;
 
-    users[idx].name = newName;
-    if (newPass !== '') users[idx].password = newPass;
+    // Validate password change
+    if (newPass !== '') {
+        if (currentPw === '') {
+            showToast('<span>❌ Vui lòng nhập mật khẩu hiện tại!</span>', 'error');
+            return;
+        }
+        if (users[idx].password !== currentPw) {
+            showToast('<span>❌ Mật khẩu hiện tại không đúng!</span>', 'error');
+            return;
+        }
+        users[idx].password = newPass;
+    }
+
+    users[idx].name  = newName;
+    users[idx].phone = newPhone;
 
     localStorage.setItem('users', JSON.stringify(users));
     currentUserInfo.name = newName;
@@ -427,6 +463,8 @@ document.getElementById('profile-form').addEventListener('submit', function(e) {
 
     document.getElementById('display-user-name').innerText = newName;
     document.getElementById('prof-password').value         = '';
+    if (document.getElementById('prof-current-password'))
+        document.getElementById('prof-current-password').value = '';
     updateHeaderGreeting();
     showToast(`<span>Cập nhật thông tin thành công! ✓</span>`, 'success');
 });
@@ -1605,7 +1643,7 @@ document.getElementById('auth-modal').addEventListener('click', function(e) {
 (function() {
     let currentSlide = 0;
     let slideshowTimer = null;
-    const INTERVAL = 1000;
+    const INTERVAL = 4000;
 
     function goToSlide(index) {
         const slides = document.querySelectorAll('.banner-slide');
