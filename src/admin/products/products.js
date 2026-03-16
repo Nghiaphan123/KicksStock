@@ -162,7 +162,8 @@ function openEditPanel(item) {
 		// Update image if new file chosen
 		const imageInput = document.getElementById("edit-image");
 		if (imageInput.files.length > 0) {
-			item.image = URL.createObjectURL(imageInput.files[0]);
+			const fileName = imageInput.files[0].name;
+			item.image = "res/images/products/" + fileName;
 		}
 
 		// ✅ Save back to localStorage — cập nhật đầy đủ
@@ -253,7 +254,13 @@ function openAddPanel() {
 
 		// Get uploaded image file
 		const imageInput = document.getElementById("new-image");
-		let imagePath = "";
+		let imagePath = "res/images/products/default.jpg"; // Fallback
+
+		if (imageInput.files.length > 0) {
+			const fileName = imageInput.files[0].name;
+			// construct the relative path
+			imagePath = "res/images/products/" + fileName;
+		}
 		if (imageInput.files.length > 0) {
 			imagePath = URL.createObjectURL(imageInput.files[0]); // temporary preview path
 		}

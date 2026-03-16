@@ -118,18 +118,17 @@ storage note
 
 .note-card {
   display: grid;
-  grid-template-columns: 100px 150px 1fr; /* ID | Total | Date */
+  grid-template-columns: 100px 150px 150px 1fr; /* ID | Total | Date */
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #eee;
 }
 
-.note-card {
-  display: grid;
-  grid-template-columns: 100px 150px 1fr; /* ID | Total | Date */
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
+/* Ensure the header row aligns perfectly */
+.header-row.note-card {
+  background-color: #f5f5f5;
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
 }
 
 .header-row {
@@ -252,4 +251,20 @@ storage note
   background: #6c757d;
   color: #fff;
   cursor: pointer;
+}
+
+.producer-badge {
+  background-color: #daa646; /* Light Orange */
+  color: #ffffff;            /* Darker text for contrast */
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.total-badge {
+  background-color: #48b261; /* Light Green */
+  color: #ffffff;            /* Darker text for contrast */
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
 }

@@ -5,6 +5,7 @@ let buyNotes = JSON.parse(localStorage.getItem("buyNotes")) || [];
 const notesList = document.getElementById("notes-list");
 const notesPagination = document.getElementById("notes-pagination");
 
+const PRODUCERS = ["AAA", "BBB", "CCC", "DDD"]; // Global producer list
 
 let notesPageIndex = 1;
 const notesPerPage = 5; // show 5 notes per page
@@ -15,7 +16,9 @@ const WARNING_YELLOW = 15;
 // Render product rows
 function renderProducts() {
     storageList.innerHTML = "";
-    productItems.forEach(item => {
+    const sortedProducts = [...productItems].sort((a, b) => a.amount - b.amount);
+
+    sortedProducts.forEach(item => {
         const row = document.createElement("div");
         row.className = "product-card-row";
 
@@ -45,22 +48,23 @@ function renderProducts() {
 // Render product rows
 function renderNotes() {
     notesList.innerHTML = "";
-
     const start = (notesPageIndex - 1) * notesPerPage;
     const end = start + notesPerPage;
-    const pageNotes = buyNotes.slice(start, end);
+    const reversedNotes = [...buyNotes].reverse();
+    const pageNotes = reversedNotes.slice(start, end);
 
     pageNotes.forEach(note => {
         const card = document.createElement("div");
         card.className = "note-card";
         card.innerHTML = `
-      <div><strong>ID:</strong> ${note.id}</div>
-      <div><strong>Total:</strong> $${note.total.toFixed(2)}</div>
-      <div><strong>Date:</strong> ${note.date}</div>
-    `;
+            <div>${note.id}</div>
+            <div>${note.producer || "N/A"}</div> 
+            <div>$${note.total.toFixed(2)}</div>
+            <div>${note.date}</div>
+        `;
+        card.addEventListener("click", () => showNoteDetail(note));
         notesList.appendChild(card);
     });
-
     renderNotesPagination();
 }
 
@@ -131,11 +135,18 @@ function showNoteDetail(note) {
   panel.className = "note-detail-panel";
 
   // Header
-  const header = `
-    <h2>Note #${note.id}</h2>
-    <p>Total: $${note.total.toFixed(2)}</p>
-    <p>Date: ${note.date}</p>
-  `;
+    const header = `
+        <h2>Note #${note.id}</h2>
+        <p>
+            <strong>Producer:</strong> 
+            <span class="producer-badge">${note.producer || "N/A"}</span>
+        </p>
+        <p>
+            <strong>Total:</strong> 
+            <span class="total-badge">$${note.total.toFixed(2)}</span>
+        </p>
+        <p><strong>Date:</strong> ${note.date}</p>
+    `;
 
   // Product list header
   const listHeader = `
@@ -181,32 +192,6 @@ function showNoteDetail(note) {
   });
 }
 
-// Render notes
-function renderNotes() {
-    notesList.innerHTML = "";
-
-    const start = (notesPageIndex - 1) * notesPerPage;
-    const end = start + notesPerPage;
-
-    // Reverse the notes so newest comes first
-    const reversedNotes = [...buyNotes].reverse();
-    const pageNotes = reversedNotes.slice(start, end);
-
-    pageNotes.forEach(note => {
-        const card = document.createElement("div");
-        card.className = "note-card";
-        card.innerHTML = `
-    <div>${note.id}</div>
-    <div>$${note.total.toFixed(2)}</div>
-    <div>${note.date}</div>
-  `;
-        card.addEventListener("click", () => showNoteDetail(note));
-        notesList.appendChild(card);
-    });
-
-    renderNotesPagination();
-}
-
 // Buy button
 // Buy button
 document.getElementById("buy-btn").addEventListener("click", () => {
@@ -228,6 +213,9 @@ document.getElementById("buy-btn").addEventListener("click", () => {
             ? Math.max(...buyNotes.map(n => parseInt(n.id, 10))) + 1
             : 1;
 
+        // Pick a producer (randomly for this example, or from a selection)
+        const randomProducer = PRODUCERS[Math.floor(Math.random() * PRODUCERS.length)];
+
         // Collect product details
         const productsBought = [];
         document.querySelectorAll(".add-amount").forEach(input => {
@@ -247,6 +235,7 @@ document.getElementById("buy-btn").addEventListener("click", () => {
 
         const note = {
             id: nextId,
+            producer: randomProducer,
             total: total,
             date: new Date().toLocaleString(),
             products: productsBought   // save product details
