@@ -16,13 +16,11 @@
     <div class="container">
         <header>
             <nav class="nav-links">
-                <a href="#">New Drops 🔥</a>
-                <a href="#">Men ▾</a>
-                <a href="#">Women ▾</a>
+                <a href="#" onclick="scrollToNewDrops(); return false;">New Drops 🔥</a>
+                <a href="#" onclick="scrollToFilter(); return false;"><i class="fas fa-search"></i></a>
             </nav>
             <img class="img-logo" src="./../../../res/images/logoKick.png" alt="KICKS Logo" onclick="void(0)" style="cursor:pointer; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">
             <div class="user-actions" style="display:flex;align-items:center;gap:20px;">
-                <i class="fas fa-search" style="cursor:pointer;"></i>
                 <div class="user-profile-header" style="display:flex;align-items:center;gap:8px;">
                     <i class="fas fa-user" id="header-user-icon" style="cursor:pointer;"></i>
                     <span id="header-greeting" style="font-size:14px;font-weight:600;"></span>
@@ -64,6 +62,15 @@
     <div class="shop-container">
         <aside class="sidebar">
             <div class="filter-header"><h3>Filters</h3></div>
+
+            <!-- Search bar -->
+            <div class="filter-group">
+                <div class="sidebar-search-wrap">
+                    <i class="fas fa-search sidebar-search-icon"></i>
+                    <input type="text" id="sidebar-search" placeholder="Search products..." oninput="toggleFilter('name', this.value)">
+                </div>
+            </div>
+
             <div class="filter-group">
                 <h4>Refine by</h4>
                 <div class="refine-tags"><span class="tag-pill active">Mens</span><span class="tag-pill active">Casual</span></div>
@@ -214,7 +221,7 @@
                     <div class="summary-row"><span>Sales Tax</span><span>-</span></div>
                     <div class="summary-row total"><span>Total</span><span id="summary-final-total">$0.00</span></div>
                     <button class="btn-checkout">CHECKOUT</button>
-                    <a href="#" class="promo-link">Use a promo code</a>
+               
                 </div>
             </div>
         </div>
@@ -460,6 +467,8 @@
         </div>
     </div>
 </div>
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
 <script src="./../../globals/initilization.js" > </script>
 <script src="index.js"></script>
 </body>

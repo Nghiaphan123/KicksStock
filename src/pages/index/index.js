@@ -22,12 +22,19 @@ function generateUserId() {
     return Math.max(...users.map(u => Number(u.id) || 0)) + 1;
 }
 
-/* Products — initilization.js đã load từ localStorage vào global products[] */
+/* Products — luôn đọc từ localStorage để đồng bộ với admin */
 function getProducts() {
-    return products;
+    return JSON.parse(localStorage.getItem('products')) || products;
 }
 function saveProducts() {
     localStorage.setItem('products', JSON.stringify(products));
+}
+function reloadProducts() {
+    const fresh = JSON.parse(localStorage.getItem('products'));
+    if (fresh) {
+        products.length = 0;
+        fresh.forEach(p => products.push(p));
+    }
 }
 
 /* ============================================================
@@ -472,6 +479,71 @@ function setOrderStatusFilter(status) {
     applyOrderFilters();
 }
 
+function openOrderDetail(order) {
+    // Remove existing if any
+    document.getElementById('order-detail-overlay')?.remove();
+
+    const statusClass = order.status.toLowerCase();
+    const dateStr = new Date(order.date).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+    const itemsHtml = order.items.map(item => `
+        <div class="od-item">
+            <img src="${item.image || 'https://via.placeholder.com/50'}" alt="${item.name}">
+            <div class="od-item-info">
+                <div class="od-item-name">${item.name}</div>
+                <div class="od-item-sub">Size: ${item.size} &nbsp;|&nbsp; Qty: ${item.quantity}</div>
+            </div>
+            <div class="od-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+        </div>`).join('');
+
+    const overlay = document.createElement('div');
+    overlay.id = 'order-detail-overlay';
+    overlay.className = 'od-overlay';
+    overlay.innerHTML = `
+        <div class="od-modal">
+            <div class="od-header">
+                <div>
+                    <div class="od-title">Order Details</div>
+                    <div class="od-id">${order.orderId}</div>
+                </div>
+                <button class="od-close" onclick="document.getElementById('order-detail-overlay').remove()">✕</button>
+            </div>
+            <div class="od-body">
+                <div class="od-info-grid">
+                    <div class="od-info-item">
+                        <span class="od-label">Date</span>
+                        <span class="od-value">${dateStr}</span>
+                    </div>
+                    <div class="od-info-item">
+                        <span class="od-label">Status</span>
+                        <span class="o-status ${statusClass}">${order.status}</span>
+                    </div>
+                    <div class="od-info-item">
+                        <span class="od-label">Payment</span>
+                        <span class="od-value">${order.paymentMethod || 'N/A'}</span>
+                    </div>
+                    <div class="od-info-item">
+                        <span class="od-label">Shipping Address</span>
+                        <span class="od-value">${order.shippingAddress || 'N/A'}</span>
+                    </div>
+                </div>
+                <div class="od-divider"></div>
+                <div class="od-items-title">Items Ordered</div>
+                <div class="od-items">${itemsHtml}</div>
+                <div class="od-divider"></div>
+                <div class="od-totals">
+                    <div class="od-total-row"><span>Subtotal</span><span>$${order.subtotal?.toFixed(2) ?? order.totalPrice.toFixed(2)}</span></div>
+                    ${order.discount > 0 ? `<div class="od-total-row" style="color:#27ae60;"><span>Discount ${order.promoCode ? '(' + order.promoCode + ')' : ''}</span><span>-$${order.discount.toFixed(2)}</span></div>` : ''}
+                    <div class="od-total-row"><span>Delivery</span><span>${order.delivery === 0 ? 'Free' : '$' + order.delivery?.toFixed(2)}</span></div>
+                    <div class="od-total-row od-grand-total"><span>Total</span><span>$${order.totalPrice.toFixed(2)}</span></div>
+                </div>
+            </div>
+        </div>`;
+
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
 function applyOrderFilters() {
     const searchText = (document.getElementById('order-search-text')?.value || '').toLowerCase().trim();
     const searchDate = document.getElementById('order-search-date')?.value || '';
@@ -506,7 +578,7 @@ function applyOrderFilters() {
     }
 
     let html = '';
-    filtered.forEach(order => {
+    filtered.forEach((order, idx) => {
         let itemsHtml = '';
         order.items.forEach(item => {
             itemsHtml += `
@@ -521,7 +593,7 @@ function applyOrderFilters() {
         const dateStr     = new Date(order.date).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         const statusClass = order.status.toLowerCase();
         html += `
-            <div class="order-card">
+            <div class="order-card" onclick="openOrderDetail(_allOrdersForFilter[${_allOrdersForFilter.indexOf(order)}])" style="cursor:pointer;">
                 <div class="order-header">
                     <div>
                         <div class="o-id">${order.orderId}</div>
@@ -530,7 +602,10 @@ function applyOrderFilters() {
                     <div class="o-status ${statusClass}">${order.status}</div>
                 </div>
                 <div class="order-items">${itemsHtml}</div>
-                <div class="order-total">Total: $${order.totalPrice.toFixed(2)}</div>
+                <div class="order-footer">
+                    <div class="order-total">Total: $${order.totalPrice.toFixed(2)}</div>
+                    <span class="od-view-btn">View Details →</span>
+                </div>
             </div>`;
     });
     container.innerHTML = html;
@@ -573,8 +648,7 @@ function renderProductDetail(product, shouldScroll = false) {
 
     let sizesHtml = product.sizes.map(size => {
         let isDisabled = !size.available ? 'disabled' : '';
-        let isSelected = (!isDisabled && size.val == product.sizes.find(s=>s.available)?.val) ? 'selected' : '';
-        return `<div class="size-btn ${isDisabled} ${isSelected}">${size.val}</div>`;
+        return `<div class="size-btn ${isDisabled}">${size.val}</div>`;
     }).join('');
 
     let colorsHtml = product.colors.map((colorObj, i) => {
@@ -610,6 +684,11 @@ function renderProductDetail(product, shouldScroll = false) {
             <div class="size-grid">${sizesHtml}</div>
         </div>
         <div class="btn-group">
+            <div class="qty-selector">
+                <button class="qty-btn" id="qty-minus">−</button>
+                <span class="qty-value" id="qty-value">1</span>
+                <button class="qty-btn" id="qty-plus">+</button>
+            </div>
             <button id="btn-add-to-cart" class="btn btn-black" ${(product.amount ?? 0) === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>Add To Cart</button>
             <button class="btn btn-fav"><i class="far fa-heart"></i></button>
         </div>
@@ -634,6 +713,28 @@ function renderProductDetail(product, shouldScroll = false) {
 function handleAddToCartLogic(product) {
     let selectedSize  = null;
     let selectedColor = product.colors && product.colors.length > 0 ? product.colors[0].name : 'Standard';
+    let selectedQty   = 1;
+
+    // Quantity selector
+    const qtyMinus = document.getElementById('qty-minus');
+    const qtyPlus  = document.getElementById('qty-plus');
+    const qtyValue = document.getElementById('qty-value');
+
+    function updateQtyButtons() {
+        const stock = products.find(p => p.id === product.id)?.amount ?? 0;
+        if (qtyMinus) qtyMinus.disabled = selectedQty <= 1;
+        if (qtyPlus)  qtyPlus.disabled  = selectedQty >= stock;
+        if (qtyValue) qtyValue.textContent = selectedQty;
+    }
+
+    if (qtyMinus) qtyMinus.addEventListener('click', () => {
+        if (selectedQty > 1) { selectedQty--; updateQtyButtons(); }
+    });
+    if (qtyPlus) qtyPlus.addEventListener('click', () => {
+        const stock = products.find(p => p.id === product.id)?.amount ?? 0;
+        if (selectedQty < stock) { selectedQty++; updateQtyButtons(); }
+    });
+    updateQtyButtons();
 
     // Chọn size
     const sizeBtns = document.querySelectorAll('.size-btn');
@@ -683,20 +784,28 @@ function handleAddToCartLogic(product) {
             showToast('<span>❌ Sản phẩm đã hết hàng!</span>', 'error', 3000);
             return;
         }
+        if (selectedQty > currentStock) {
+            showToast(`<span>❌ Chỉ còn ${currentStock} sản phẩm trong kho!</span>`, 'error', 3000);
+            return;
+        }
 
         // ✅ THÊM VÀO CART
-        if (existIdx !== -1) cart[existIdx].quantity += 1;
+        if (existIdx !== -1) cart[existIdx].quantity += selectedQty;
         else cart.push({
             id: product.id, name: product.name, price: product.price,
-            image: product.image, size: selectedSize, color: selectedColor, quantity: 1
+            image: product.image, size: selectedSize, color: selectedColor, quantity: selectedQty
         });
         localStorage.setItem('shoppingCart', JSON.stringify(cart));
         syncCartToUser();
 
         // ✅ TRỪ AMOUNT NGAY KHI THÊM VÀO GIỎ
-        products[pIdx].amount = currentStock - 1;
+        products[pIdx].amount = currentStock - selectedQty;
         saveProducts();
         renderProductGrid();
+
+        // ✅ RE-RENDER PRODUCT DETAIL để cập nhật stock badge + reset qty
+        selectedQty = 1;
+        renderProductDetail(products[pIdx], false);
 
         updateCartIconCount();
         cartBottom.renderCart();
@@ -718,13 +827,15 @@ function handleAddToCartLogic(product) {
    11. FILTER & GRID
 ============================================================ */
 let state = {
-    filters: { brands: [], sizes: [], colors: [], maxPrice: 1000 },
+    filters: { brands: [], sizes: [], colors: [], maxPrice: 1000, name: '' },
     currentPage: 1,
     itemsPerPage: 6
 };
 
 function toggleFilter(type, value, element) {
-    if (type === 'brand') {
+    if (type === 'name') {
+        state.filters.name = value.toLowerCase().trim();
+    } else if (type === 'brand') {
         state.filters.brands.includes(value)
             ? state.filters.brands = state.filters.brands.filter(i => i !== value)
             : state.filters.brands.push(value);
@@ -758,6 +869,7 @@ function updatePrice(value) {
 
 function getFilteredProducts() {
     return products.filter(p => {
+        const nameMatch  = !state.filters.name || p.name.toLowerCase().includes(state.filters.name);
         const brandMatch = state.filters.brands.length === 0 || state.filters.brands.includes(p.brand);
         const priceMatch = p.price <= state.filters.maxPrice;
         const sizeMatch  = state.filters.sizes.length === 0 ||
@@ -766,11 +878,12 @@ function getFilteredProducts() {
             state.filters.colors.some(fc =>
                 p.colors.some(co => co.hex.toLowerCase() === fc.toLowerCase())
             );
-        return brandMatch && priceMatch && sizeMatch && colorMatch;
+        return nameMatch && brandMatch && priceMatch && sizeMatch && colorMatch;
     });
 }
 
 function renderProductGrid() {
+    reloadProducts(); // ✅ Sync với localStorage mới nhất từ admin
     const grid       = document.getElementById('grid-container');
     const pagination = document.getElementById('pagination');
     const countLabel = document.getElementById('product-count');
@@ -837,6 +950,7 @@ function renderProductGrid() {
    12. NEW DROPS
 ============================================================ */
 function renderNewDrops() {
+    reloadProducts(); // ✅ Sync với localStorage mới nhất từ admin
     const container = document.getElementById('new-drops-grid');
     if (!container) return;
     container.innerHTML = '';
@@ -1485,6 +1599,57 @@ document.getElementById('auth-modal').addEventListener('click', function(e) {
 /* ============================================================
    18. INIT
 ============================================================ */
+// Scroll to New Drops section
+function scrollToNewDrops() {
+    const el = document.querySelector('.new-drops-section');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Scroll to Filter/Search section
+function scrollToFilter() {
+    const el = document.querySelector('.shop-container');
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Focus vào sidebar search sau khi scroll
+        setTimeout(() => {
+            const searchInput = document.getElementById('sidebar-search');
+            if (searchInput) searchInput.focus();
+        }, 600);
+    }
+}
+
+// Back to Top button — hiện khi scroll xuống 400px
+(function () {
+    const btn = document.getElementById('back-to-top');
+    if (!btn) return;
+    window.addEventListener('scroll', () => {
+        btn.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+})();
+(function () {
+    const header = document.querySelector('header');
+    if (!header) return;
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        if (currentScrollY > lastScrollY && currentScrollY > 80) {
+            header.classList.add('nav-hidden');
+        } else {
+            header.classList.remove('nav-hidden');
+        }
+        header.classList.toggle('nav-scrolled', currentScrollY > 10);
+        lastScrollY = currentScrollY;
+    }, { passive: true });
+})();
+// ✅ Lắng nghe khi admin thay đổi localStorage từ tab khác → tự cập nhật client
+window.addEventListener('storage', (e) => {
+    if (e.key === 'products') {
+        reloadProducts();
+        renderProductGrid();
+        renderNewDrops();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     loadCartFromUser();      // Load cart của user đang đăng nhập
     updateHeaderGreeting();

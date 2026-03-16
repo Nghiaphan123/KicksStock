@@ -141,11 +141,11 @@ function openEditPanel(item) {
 
 	// Save button
 	document.getElementById("save-edit").addEventListener("click", () => {
-		item.name = document.getElementById("edit-name").value;
-		item.brand = document.getElementById("edit-brand").value;
-		item.price = parseFloat(document.getElementById("edit-price").value);
-		item.tag = document.getElementById("edit-tag").value;
-		item.description = document.getElementById("edit-description").value;
+		item.name        = document.getElementById("edit-name").value.trim();
+		item.brand       = document.getElementById("edit-brand").value.trim();
+		item.price       = parseFloat(document.getElementById("edit-price").value) || 0;
+		item.tag         = document.getElementById("edit-tag").value.trim();
+		item.description = document.getElementById("edit-description").value.trim();
 
 		// Update colors
 		document.querySelectorAll(".edit-color").forEach(input => {
@@ -165,15 +165,19 @@ function openEditPanel(item) {
 			item.image = URL.createObjectURL(imageInput.files[0]);
 		}
 
-		// Save back to localStorage
+		// ✅ Save back to localStorage — cập nhật đầy đủ
 		const index = productItems.findIndex(p => p.id === item.id);
 		if (index !== -1) {
-			productItems[index] = item;
+			productItems[index] = { ...item }; // spread để tránh reference
 			localStorage.setItem("products", JSON.stringify(productItems));
 		}
 
+		// ✅ Hiện toast thông báo thành công
+		showSaveToast("✓ Product updated successfully!");
+
 		// Refresh UI
 		filterItems();
+		refreshBrandCounts();
 		panel.remove();
 		overlay.remove();
 	});
@@ -276,6 +280,7 @@ function openAddPanel() {
 		productItems.push(newProduct);
 		localStorage.setItem("products", JSON.stringify(productItems));
 
+		showSaveToast("✓ Product added successfully!");
 		filterItems();
 		refreshBrandCounts();
 		panel.remove();
@@ -448,6 +453,37 @@ function renderBrandBar() {
 	updateBrandCounts(productItems);
 }
 
+
+// -----------------------------
+// Toast notification
+// -----------------------------
+function showSaveToast(message) {
+	const existing = document.getElementById("save-toast");
+	if (existing) existing.remove();
+
+	const toast = document.createElement("div");
+	toast.id = "save-toast";
+	toast.textContent = message;
+	toast.style.cssText = `
+		position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+		background: #222; color: #fff; padding: 12px 28px; border-radius: 999px;
+		font-size: 14px; font-weight: 600; z-index: 9999;
+		box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+		animation: toastFadeIn 0.3s ease;
+	`;
+
+	if (!document.getElementById("toast-keyframes")) {
+		const style = document.createElement("style");
+		style.id = "toast-keyframes";
+		style.textContent = `
+			@keyframes toastFadeIn { from { opacity:0; transform:translateX(-50%) translateY(10px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+		`;
+		document.head.appendChild(style);
+	}
+
+	document.body.appendChild(toast);
+	setTimeout(() => toast.remove(), 2500);
+}
 
 // -----------------------------
 // Initialize

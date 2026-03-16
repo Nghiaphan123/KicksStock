@@ -1,27 +1,52 @@
 const ITEMS_PER_PAGE = 12;
 let currentPage = 1;
 let _allOrders = [];
-let _activeStatus = 'all';
+let _hiddenOrders = new Set(JSON.parse(sessionStorage.getItem('hiddenOrders') || '[]'));
+let _showHidden = false;
 
-/* ── Filter helpers ── */
-function setStatusFilter(status) {
-  _activeStatus = status;
-  document.querySelectorAll('.status-btn').forEach(b =>
-    b.classList.toggle('active-btn', b.dataset.status === status)
-  );
-  currentPage = 1;
+function saveHiddenState() {
+  sessionStorage.setItem('hiddenOrders', JSON.stringify([..._hiddenOrders]));
+}
+
+function toggleHideOrder(orderId, btn) {
+  event.stopPropagation(); // không trigger openOrderPanel
+  if (_hiddenOrders.has(orderId)) {
+    _hiddenOrders.delete(orderId);
+  } else {
+    _hiddenOrders.add(orderId);
+  }
+  saveHiddenState();
   applyFilters();
 }
 
+function toggleShowHidden() {
+  _showHidden = !_showHidden;
+  const btn = document.getElementById('toggle-hidden-btn');
+  if (btn) {
+    btn.textContent = _showHidden ? '👁 Hide Hidden' : '👁 Show Hidden';
+    btn.classList.toggle('active-hidden', _showHidden);
+  }
+  applyFilters();
+}
+let _activeStatus = 'all';
+
+/* ── Filter helpers ── */
 function applyFilters() {
   const orderId  = document.getElementById('search-orderid')?.value.toLowerCase().trim() || '';
   const dateVal  = document.getElementById('search-date')?.value || '';
   const customer = document.getElementById('search-customer')?.value.toLowerCase().trim() || '';
+  const status   = document.getElementById('search-status')?.value || 'all';
+  const payment  = document.getElementById('search-payment')?.value || 'all';
 
   const filtered = _allOrders.filter(o => {
-    if (_activeStatus !== 'all' && o.status.toLowerCase() !== _activeStatus) return false;
-    if (orderId   && !o.orderId.toLowerCase().includes(orderId))       return false;
-    if (customer  && !o.customerName.toLowerCase().includes(customer)) return false;
+    // Ẩn/hiện theo hidden state
+    const isHidden = _hiddenOrders.has(o.orderId);
+    if (isHidden && !_showHidden) return false;
+
+    if (status  !== 'all' && o.status.toLowerCase() !== status)                    return false;
+    if (payment !== 'all' && (o.paymentMethod || '').toLowerCase() !== payment)    return false;
+    if (orderId   && !o.orderId.toLowerCase().includes(orderId))                   return false;
+    if (customer  && !o.customerName.toLowerCase().includes(customer))             return false;
     if (dateVal) {
       const orderDate = new Date(o.date).toISOString().slice(0, 10);
       if (orderDate !== dateVal) return false;
@@ -29,6 +54,7 @@ function applyFilters() {
     return true;
   });
 
+  currentPage = 1;
   renderOrders(filtered);
 }
 
@@ -36,12 +62,51 @@ function clearFilters() {
   document.getElementById('search-orderid').value  = '';
   document.getElementById('search-date').value     = '';
   document.getElementById('search-customer').value = '';
-  _activeStatus = 'all';
-  document.querySelectorAll('.status-btn').forEach(b =>
-    b.classList.toggle('active-btn', b.dataset.status === 'all')
-  );
+  document.getElementById('search-status').value   = 'all';
+  document.getElementById('search-payment').value  = 'all';
   currentPage = 1;
   renderOrders(_allOrders);
+}
+
+/* ── Inline field edit helpers ── */
+function toggleEditField(prefix) {
+  const display = document.getElementById(`${prefix}-display`);
+  const input   = document.getElementById(`${prefix}-input`);
+  const editBtn = document.getElementById(`${prefix}-edit-btn`);
+  const saveBtn = document.getElementById(`${prefix}-save-btn`);
+
+  const isEditing = input.style.display !== 'none';
+  display.style.display = isEditing ? 'inline' : 'none';
+  input.style.display   = isEditing ? 'none'   : 'inline-block';
+  editBtn.style.display = isEditing ? 'inline-block' : 'none';
+  saveBtn.style.display = isEditing ? 'none'   : 'inline-block';
+  if (!isEditing) input.focus();
+}
+
+function saveFieldEdit(prefix, orderId, field) {
+  const input   = document.getElementById(`${prefix}-input`);
+  const display = document.getElementById(`${prefix}-display`);
+  const newVal  = input.value.trim();
+
+  // Update allOrders
+  const idx = _allOrders.findIndex(o => o.orderId === orderId);
+  if (idx !== -1) {
+    _allOrders[idx][field] = newVal;
+    localStorage.setItem('allOrders', JSON.stringify(_allOrders));
+
+    // Sync to users[].orders
+    const userId = _allOrders[idx].userId;
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    const uIdx = users.findIndex(u => u.id == userId);
+    if (uIdx !== -1 && Array.isArray(users[uIdx].orders)) {
+      const oIdx = users[uIdx].orders.findIndex(o => o.orderId === orderId);
+      if (oIdx !== -1) users[uIdx].orders[oIdx][field] = newVal;
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+  }
+
+  display.textContent = newVal || 'N/A';
+  toggleEditField(prefix); // switch back to display mode
 }
 
 /* ── Order panel ── */
@@ -70,8 +135,30 @@ function openOrderPanel(order) {
     <div><strong>Customer:</strong> ${order.customerName}</div>
     <div><strong>Status:</strong> ${order.status}</div>
     <div><strong>Total Price:</strong> $${order.totalPrice.toFixed(2)}</div>
-    <div><strong>Payment Method:</strong> ${order.paymentMethod || "N/A"}</div>
-    <div><strong>Shipping Address:</strong> ${order.shippingAddress}</div>
+
+    <!-- Payment Method editable -->
+    <div class="editable-field">
+      <strong>Payment Method:</strong>
+      <span id="pm-display">${order.paymentMethod || "N/A"}</span>
+      <select id="pm-input" style="display:none;">
+        <option value="cod"  ${order.paymentMethod === 'cod'  ? 'selected' : ''}>COD</option>
+        <option value="momo" ${order.paymentMethod === 'momo' ? 'selected' : ''}>Momo</option>
+        <option value="card" ${order.paymentMethod === 'card' ? 'selected' : ''}>Card</option>
+        <option value="N/A"  ${!order.paymentMethod || order.paymentMethod === 'N/A' ? 'selected' : ''}>N/A</option>
+      </select>
+      <button class="edit-field-btn" id="pm-edit-btn" onclick="toggleEditField('pm')">Edit</button>
+      <button class="save-field-btn" id="pm-save-btn" style="display:none;" onclick="saveFieldEdit('pm', '${order.orderId}', 'paymentMethod')">Save</button>
+    </div>
+
+    <!-- Shipping Address editable -->
+    <div class="editable-field">
+      <strong>Shipping Address:</strong>
+      <span id="sa-display">${order.shippingAddress || "N/A"}</span>
+      <input id="sa-input" type="text" value="${order.shippingAddress || ""}" style="display:none;">
+      <button class="edit-field-btn" id="sa-edit-btn" onclick="toggleEditField('sa')">Edit</button>
+      <button class="save-field-btn" id="sa-save-btn" style="display:none;" onclick="saveFieldEdit('sa', '${order.orderId}', 'shippingAddress')">Save</button>
+    </div>
+
     <h3>Items</h3>
     <div class="items-container">
       ${itemsList}
@@ -127,7 +214,7 @@ function renderOrders(orders) {
   const paginated = orders.slice(start, start + ITEMS_PER_PAGE);
 
   if (paginated.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#999;">No orders found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:#999;">No orders found.</td></tr>`;
     renderPagination(orders);
     return;
   }
@@ -135,19 +222,38 @@ function renderOrders(orders) {
   paginated.forEach(o => {
     const row = document.createElement("tr");
     const dateObj = new Date(o.date);
-    const formattedDate = dateObj.toLocaleDateString("en-GB");
-    const formattedTime = dateObj.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    const formattedTime  = dateObj.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    const day   = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year  = dateObj.getFullYear();
+    const isHidden = _hiddenOrders.has(o.orderId);
+
+    if (isHidden) row.classList.add('row-hidden');
 
     row.innerHTML = `
       <td>#${o.orderId}</td>
       <td class="time-cell">${formattedTime}</td>
-      <td>${formattedDate}</td>
+      <td class="date-cell">${day}</td>
+      <td class="date-cell">${month}</td>
+      <td class="date-cell">${year}</td>
       <td>${o.paymentMethod || "N/A"}</td>
       <td>${o.customerName}</td>
       <td><span class="status ${o.status.toLowerCase()}">${o.status}</span></td>
       <td>$${o.totalPrice.toFixed(2)}</td>
+      <td>
+        <button class="hide-row-btn ${isHidden ? 'unhide' : ''}" 
+          onclick="toggleHideOrder('${o.orderId}', this)" 
+          title="${isHidden ? 'Show' : 'Hide'}">
+          ${isHidden ? '👁 Show' : '👁 Hide'}
+        </button>
+      </td>
     `;
-    row.addEventListener("click", () => openOrderPanel(o));
+    row.querySelector('td:not(:last-child)')?.addEventListener('click', () => openOrderPanel(o));
+    // Make all cells except last clickable
+    row.querySelectorAll('td:not(:last-child)').forEach(td => {
+      td.style.cursor = 'pointer';
+      td.addEventListener('click', () => openOrderPanel(o));
+    });
     tbody.appendChild(row);
   });
 

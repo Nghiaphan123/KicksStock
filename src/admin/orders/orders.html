@@ -34,24 +34,32 @@
 			<!-- Search & Filter Bar -->
 			<div class="search-bar">
 				<div class="search-input-wrap">
-					<i class="search-icon">🔍</i>
 					<input type="text" id="search-orderid" placeholder="Order ID..." oninput="applyFilters()">
 				</div>
 				<div class="search-input-wrap">
-					<i class="search-icon">📅</i>
-					<input type="date" id="search-date" onchange="applyFilters()">
-				</div>
-				<div class="search-input-wrap">
-					<i class="search-icon">👤</i>
 					<input type="text" id="search-customer" placeholder="Customer Name..." oninput="applyFilters()">
 				</div>
-				<div class="status-btns">
-					<button class="status-btn active-btn" data-status="all"      onclick="setStatusFilter('all')">All</button>
-					<button class="status-btn btn-pending"  data-status="pending"  onclick="setStatusFilter('pending')">Pending</button>
-					<button class="status-btn btn-done"     data-status="done"     onclick="setStatusFilter('done')">Done</button>
-					<button class="status-btn btn-canceled" data-status="canceled" onclick="setStatusFilter('canceled')">Canceled</button>
+				<div class="search-input-wrap">
+					<input type="date" id="search-date" onchange="applyFilters()">
+				</div>
+				<div class="search-select-wrap">
+					<select id="search-status" onchange="applyFilters()">
+						<option value="all">All Status</option>
+						<option value="pending">Pending</option>
+						<option value="done">Done</option>
+						<option value="canceled">Canceled</option>
+					</select>
+				</div>
+				<div class="search-select-wrap">
+					<select id="search-payment" onchange="applyFilters()">
+						<option value="all">All Payment</option>
+						<option value="cod">COD</option>
+						<option value="momo">Momo</option>
+						<option value="card">Card</option>
+					</select>
 				</div>
 				<button class="clear-btn" onclick="clearFilters()">✕ Clear</button>
+				<button class="clear-btn active-hidden" id="toggle-hidden-btn" onclick="toggleShowHidden()" style="background:#6c757d;">👁 Show Hidden</button>
 			</div>
 
 			<div class="orders-wrapper">
@@ -60,11 +68,14 @@
 					<tr>
 					<th>Order ID</th>
 					<th>Time</th>
-					<th>Date</th>
+					<th>Day</th>
+					<th>Month</th>
+					<th>Year</th>
 					<th>Payment Method</th>
 					<th>Customer Name</th>
 					<th>Status</th>
 					<th>Total</th>
+					<th></th>
 					</tr>
 				</thead>
 				<tbody id="orders-body">
