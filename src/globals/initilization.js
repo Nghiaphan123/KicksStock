@@ -4,35 +4,35 @@ let products = [
         image: "./../../.././../../../res/images/products/ADIDAS 4DFWD X PARLEY RUNNING SHOES.jpg",
         colors: [{ name: "Shadow Navy", hex: "#2C3545", selected: true }, { name: "Army Green", hex: "#788575", selected: false }],
         sizes: [{ val: 38, available: true }, { val: 39, available: false }, { val: 40, available: true }, { val: 41, available: true }],
-        description: "Shadow Navy / Army Green style for comfort.", amount: 50
+        description: "Shadow Navy / Army Green style for comfort.", amount: 5
     },
     {
         id: 2, name: "NIKE AIR MAX 270", brand: "Nike", price: 150.00, tag: "Best Seller",
         image: "./../../.././../../../res/images/products/NIKE AIR MAX 270.jpg",
         colors: [{ name: "White/Black", hex: "#FFFFFF", selected: true }, { name: "Red", hex: "#FF0000", selected: false }],
         sizes: [{ val: 40, available: true }, { val: 41, available: true }, { val: 42, available: false }, { val: 43, available: true }],
-        description: "Nike introducing the new air max for everyone's comfort.", amount: 50
+        description: "Nike introducing the new air max for everyone's comfort.", amount: 10
     },
     {
         id: 3, name: "JORDAN RETRO 4 ", brand: "Jordan", price: 210.00, tag: "Trending",
         image: "./../../.././../../../res/images/products/JORDAN RETRO 4.jpg",
         colors: [{ name: "Blue/White", hex: "#4f6bf5", selected: true }],
         sizes: [{ val: 42, available: true }, { val: 43, available: true }],
-        description: "Classic silhouette with modern blue accents.", amount: 5
+        description: "Classic silhouette with modern blue accents.", amount: 15
     },
     {
         id: 4, name: "YEEZY BOOST 350 V2", brand: "Adidas", price: 230.00, tag: "Limited Edition",
         image: "./../../.././../../../res/images/products/YEEZY BOOST 350 V2.jpg",
         colors: [{ name: "Cream White", hex: "#F5F5DC", selected: true }],
         sizes: [{ val: 36, available: true }, { val: 37, available: true }],
-        description: "Ultra-comfortable Boost technology.", amount: 50
+        description: "Ultra-comfortable Boost technology.", amount: 20
     },
     {
         id: 5, name: "PUMA RS-X REINVENT", brand: "Puma", price: 110.00, tag: "Sale",
         image: "./../../.././../../../res/images/products/PUMA RS-X REINVENT.jpg",
         colors: [{ name: "Pastel Mix", hex: "#FFD1DC", selected: true }],
         sizes: [{ val: 38, available: true }, { val: 39, available: true }],
-        description: "Chunky sneaker style for everyday wear.", amount: 50
+        description: "Chunky sneaker style for everyday wear.", amount: 25
     },
     {
         id: 6, name: "NEW BALANCE 550", brand: "New Balance", price: 120.00, tag: "New Release",

@@ -1599,6 +1599,43 @@ document.getElementById('auth-modal').addEventListener('click', function(e) {
 /* ============================================================
    18. INIT
 ============================================================ */
+/* ============================================================
+   BANNER SLIDESHOW
+============================================================ */
+(function() {
+    let currentSlide = 0;
+    let slideshowTimer = null;
+    const INTERVAL = 1000;
+
+    function goToSlide(index) {
+        const slides = document.querySelectorAll('.banner-slide');
+        const dots   = document.querySelectorAll('.banner-dot');
+        const thumbs = document.querySelectorAll('.thumb-item');
+        if (!slides.length) return;
+
+        slides[currentSlide].classList.remove('active');
+        dots[currentSlide]?.classList.remove('active');
+        thumbs[currentSlide]?.classList.remove('active-thumb');
+
+        currentSlide = (index + slides.length) % slides.length;
+
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide]?.classList.add('active');
+        thumbs[currentSlide]?.classList.add('active-thumb');
+
+        // Reset autoplay timer
+        clearInterval(slideshowTimer);
+        slideshowTimer = setInterval(() => goToSlide(currentSlide + 1), INTERVAL);
+    }
+
+    // Expose globally for onclick
+    window.goToSlide = goToSlide;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        slideshowTimer = setInterval(() => goToSlide(currentSlide + 1), INTERVAL);
+    });
+})();
+
 // Scroll to New Drops section
 function scrollToNewDrops() {
     const el = document.querySelector('.new-drops-section');
