@@ -616,7 +616,7 @@ function applyOrderFilters() {
     }
 
     let html = '';
-    filtered.forEach((order, idx) => {
+   filtered.forEach((order, idx) => {
         let itemsHtml = '';
         order.items.forEach(item => {
             itemsHtml += `
@@ -630,6 +630,17 @@ function applyOrderFilters() {
         });
         const dateStr     = new Date(order.date).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         const statusClass = order.status.toLowerCase();
+        
+        // Tạo nút Cancel cho đơn hàng Pending
+        const cancelBtnHtml = statusClass === 'pending' 
+            ? `<button onclick="event.stopPropagation(); promptCancelOrder('${order.orderId}')" 
+                style="background:#fff; border:1px solid #dc3545; color:#dc3545; padding:6px 14px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:700; transition: 0.2s;"
+                onmouseover="this.style.background='#dc3545'; this.style.color='#fff';"
+                onmouseout="this.style.background='#fff'; this.style.color='#dc3545';">
+                Cancel Order
+               </button>`
+            : '';
+
         html += `
             <div class="order-card" onclick="openOrderDetail(_allOrdersForFilter[${_allOrdersForFilter.indexOf(order)}])" style="cursor:pointer;">
                 <div class="order-header">
@@ -640,15 +651,110 @@ function applyOrderFilters() {
                     <div class="o-status ${statusClass}">${order.status}</div>
                 </div>
                 <div class="order-items">${itemsHtml}</div>
-                <div class="order-footer">
+                <div class="order-footer" style="margin-top: 10px;">
                     <div class="order-total">Total: $${order.totalPrice.toFixed(2)}</div>
-                    <span class="od-view-btn">View Details →</span>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        ${cancelBtnHtml}
+                        <span class="od-view-btn">View Details →</span>
+                    </div>
                 </div>
             </div>`;
     });
     container.innerHTML = html;
 }
 
+/* ============================================================
+   CANCEL ORDER LOGIC & MODAL
+============================================================ */
+let orderIdToCancel = null;
+
+function promptCancelOrder(orderId) {
+    orderIdToCancel = orderId;
+    
+    // Tạo Modal xác nhận
+    const overlay = document.createElement('div');
+    overlay.id = 'cancel-confirm-overlay';
+    overlay.className = 'modal-overlay active'; 
+    overlay.style.zIndex = '25000'; // Đảm bảo nổi lên trên các modal khác
+    overlay.innerHTML = `
+        <div style="background:#fff; padding:30px; border-radius:16px; max-width:400px; width:90%; text-align:center; box-shadow:0 25px 50px rgba(0,0,0,0.3); animation: fadeIn 0.2s ease;">
+            <div style="font-size: 40px; color: #dc3545; margin-bottom: 15px;"><i class="fas fa-exclamation-circle"></i></div>
+            <h3 style="margin-bottom:12px; font-size:20px; font-weight: 800; color: #222;">Hủy đơn hàng?</h3>
+            <p style="font-size:14px; color:#666; margin-bottom:25px; line-height: 1.5;">Bạn có chắc chắn muốn hủy đơn hàng <b style="color:#222;">${orderId}</b> không?<br>Hành động này không thể hoàn tác.</p>
+            <div style="display:flex; gap:12px; justify-content:center;">
+                <button onclick="closeCancelModal()" style="flex: 1; padding:12px; border:2px solid #ddd; background:#fff; color:#555; border-radius:8px; cursor:pointer; font-weight:700; transition:0.2s;">Không, Quay lại</button>
+                <button onclick="confirmCancelOrder()" style="flex: 1; padding:12px; border:none; background:#dc3545; color:#fff; border-radius:8px; cursor:pointer; font-weight:700; transition:0.2s; box-shadow: 0 4px 10px rgba(220,53,69,0.3);">Có, Hủy đơn</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Bấm ra ngoài để đóng
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeCancelModal(); });
+}
+
+function closeCancelModal() {
+    const overlay = document.getElementById('cancel-confirm-overlay');
+    if (overlay) overlay.remove();
+    orderIdToCancel = null;
+}
+
+function confirmCancelOrder() {
+    if (!orderIdToCancel) return;
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) return;
+
+    const users = getUsers();
+    const userIdx = users.findIndex(u => u.id === currentUser.id);
+    if (userIdx === -1) return;
+
+    let orderCanceled = false;
+    let itemsToRestore = [];
+
+    // 1. Tìm và cập nhật trạng thái đơn hàng trong dữ liệu User
+    const userOrder = users[userIdx].orders.find(o => o.orderId === orderIdToCancel);
+    if (userOrder && userOrder.status.toLowerCase() === 'pending') {
+        userOrder.status = 'Canceled';
+        itemsToRestore = userOrder.items;
+        orderCanceled = true;
+    }
+
+    // 2. Tìm và cập nhật trạng thái đơn hàng trong allOrders (cho Admin)
+    const allOrders = JSON.parse(localStorage.getItem('allOrders')) || [];
+    const adminOrder = allOrders.find(o => o.orderId === orderIdToCancel);
+    if (adminOrder && adminOrder.status.toLowerCase() === 'pending') {
+        adminOrder.status = 'Canceled';
+        if (!orderCanceled) itemsToRestore = adminOrder.items; 
+        localStorage.setItem('allOrders', JSON.stringify(allOrders));
+    }
+
+    if (orderCanceled) {
+        // Lưu lại thông tin user
+        localStorage.setItem('users', JSON.stringify(users));
+
+        // 3. Hoàn trả lại số lượng tồn kho (Amount) cho Products
+        reloadProducts(); 
+        itemsToRestore.forEach(item => {
+            const pIdx = products.findIndex(p => p.id === item.id);
+            if (pIdx !== -1) {
+                products[pIdx].amount = (products[pIdx].amount ?? 0) + item.quantity;
+            }
+        });
+        saveProducts(); // Cập nhật localStorage
+
+        showToast('<span>Đã hủy đơn hàng & hoàn lại kho thành công! ✓</span>', 'success');
+
+        // 4. Re-render lại UI để cập nhật ngay lập tức
+        renderOrdersList(users[userIdx].orders);
+        renderProductGrid(); // Render lại trang chủ để badge stock cập nhật
+    } else {
+        showToast('<span>Lỗi: Đơn hàng không thể hủy hoặc đã được xử lý.</span>', 'error');
+    }
+
+    closeCancelModal();
+}
 /* ============================================================
    8. HEADER GREETING
 ============================================================ */
@@ -1127,10 +1233,12 @@ function renderCart() {
                 <span class="item-subtitle">Color: ${item.color || 'Standard'}</span>
                 <div class="item-controls">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <label>Qty:</label>
-                        <select class="cart-select" onchange="updateQuantity(${index}, this.value)">
-                            ${renderQtyOptions(item.quantity)}
-                        </select>
+                        <label style="font-weight:600; font-size:14px; color:#555;">Qty:</label>
+                        <div class="qty-selector" style="height: 32px;">
+                            <button class="qty-btn" onclick="changeCartQuantity(${index}, -1)">−</button>
+                            <span class="qty-value" style="line-height: 32px;">${item.quantity}</span>
+                            <button class="qty-btn" onclick="changeCartQuantity(${index}, 1)">+</button>
+                        </div>
                     </div>
                 </div>
                 <div class="item-actions-full">
@@ -1141,10 +1249,23 @@ function renderCart() {
     });
 }
 
-function renderQtyOptions(selected) {
-    let opts = '';
-    for (let i = 1; i <= 10; i++) opts += `<option value="${i}" ${i == selected ? 'selected' : ''}>${i}</option>`;
-    return opts;
+
+function changeCartQuantity(index, delta) {
+    let cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    if (!cart[index]) return;
+
+    let currentQty = cart[index].quantity;
+    let newQty = currentQty + delta;
+
+    // Không cho phép giảm số lượng xuống dưới 1
+    if (newQty < 1) {
+        // Nếu bạn muốn hỏi người dùng có muốn xóa không khi bấm dấu - xuống 0 thì có thể code thêm ở đây
+        // Tạm thời sẽ return luôn để chặn
+        return; 
+    }
+
+    // Tận dụng hàm updateQuantity có sẵn của bạn để kiểm tra tồn kho và update localStorage
+    updateQuantity(index, newQty);
 }
 
 function updateQuantity(index, newQty) {
