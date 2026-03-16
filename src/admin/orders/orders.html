@@ -30,11 +30,36 @@
 		<!-- Main Content -->
 		<main class="main-content">
 			<h2>Recent Orders</h2>
+
+			<!-- Search & Filter Bar -->
+			<div class="search-bar">
+				<div class="search-input-wrap">
+					<i class="search-icon">🔍</i>
+					<input type="text" id="search-orderid" placeholder="Order ID..." oninput="applyFilters()">
+				</div>
+				<div class="search-input-wrap">
+					<i class="search-icon">📅</i>
+					<input type="date" id="search-date" onchange="applyFilters()">
+				</div>
+				<div class="search-input-wrap">
+					<i class="search-icon">👤</i>
+					<input type="text" id="search-customer" placeholder="Customer Name..." oninput="applyFilters()">
+				</div>
+				<div class="status-btns">
+					<button class="status-btn active-btn" data-status="all"      onclick="setStatusFilter('all')">All</button>
+					<button class="status-btn btn-pending"  data-status="pending"  onclick="setStatusFilter('pending')">Pending</button>
+					<button class="status-btn btn-done"     data-status="done"     onclick="setStatusFilter('done')">Done</button>
+					<button class="status-btn btn-canceled" data-status="canceled" onclick="setStatusFilter('canceled')">Canceled</button>
+				</div>
+				<button class="clear-btn" onclick="clearFilters()">✕ Clear</button>
+			</div>
+
 			<div class="orders-wrapper">
 				<table class="orders-table">
 				<thead>
 					<tr>
 					<th>Order ID</th>
+					<th>Time</th>
 					<th>Date</th>
 					<th>Payment Method</th>
 					<th>Customer Name</th>
