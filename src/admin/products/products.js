@@ -290,7 +290,7 @@ function openAddPanel() {
 		showSaveToast("✓ Product added successfully!");
 		filterItems();
 		refreshBrandCounts();
-		panel.remove();
+		overlay.remove();
 	});
 }
 
