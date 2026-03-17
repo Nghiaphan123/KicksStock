@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const monthTo   = parseInt(monthToSel.value);
 
     if (monthFrom > monthTo) {
-      alert("Tháng bắt đầu phải nhỏ hơn hoặc bằng tháng kết thúc!");
+      alert("Start month must be less than or equal to end month!");
       return;
     }
 
@@ -126,8 +126,8 @@ document.addEventListener("DOMContentLoaded", () => {
           title: {
             display: true,
             text: isSingleMonth
-              ? `Profit theo ngày — ${MONTH_NAMES[monthFrom-1]} ${year}`
-              : `Profit theo ngày — ${MONTH_NAMES[monthFrom-1]} đến ${MONTH_NAMES[monthTo-1]} ${year}`,
+              ? `Daily Profit — ${MONTH_NAMES[monthFrom-1]} ${year}`
+              : `Daily Profit — ${MONTH_NAMES[monthFrom-1]} to ${MONTH_NAMES[monthTo-1]} ${year}`,
             font: { size: 16, weight: "bold" }
           },
           tooltip: {

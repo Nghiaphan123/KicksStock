@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../global/sidebar.css" />
   <link rel="stylesheet" href="style.css" />
   <script src="../global/sidebar.js" defer></script>
+  <script src="../../globals/initilization.js" defer></script>
   <script src="dashboard.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -50,16 +51,16 @@
       <!-- Graph -->
       <div class="dashboard-graph">
         <div class="chart-controls">
-          <label>Năm:
+          <label>Year:
             <select id="filter-year"></select>
           </label>
-          <label>Từ tháng:
+          <label>From:
             <select id="filter-month-from"></select>
           </label>
-          <label>Đến tháng:
+          <label>To:
             <select id="filter-month-to"></select>
           </label>
-          <button id="apply-filter">Áp dụng</button>
+          <button id="apply-filter">Apply</button>
         </div>
         <canvas id="profitLineChart"></canvas>
       </div>

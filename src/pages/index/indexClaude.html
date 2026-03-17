@@ -135,8 +135,8 @@
             </div>
             <div class="filter-group" style="border:none;">
                 <h4>Price</h4>
-                <input type="range" id="priceRange" min="0" max="1000" value="1000" step="10" oninput="updatePrice(this.value)">
-                <div class="price-labels"><span>$0</span> <span id="priceValue" style="font-weight:bold;">$1000</span></div>
+                <input type="range" id="priceRange" min="0" max="9999" value="9999" step="10" oninput="updatePrice(this.value)">
+                <div class="price-labels"><span>$0</span> <span id="priceValue" style="font-weight:bold;">$9999</span></div>
             </div>
         </aside>
         <main class="main-content">
@@ -206,9 +206,9 @@
         <div class="cart-container-page">
             <header>
                 <nav class="nav-links">
-                    <a href="#" onclick="showPage('page-index');return false;">New Drops 🔥</a>
-                    <a href="#">Men ▾</a>
-                    <a href="#">Women ▾</a>
+                    <a href="#" onclick="showPage('page-index');return false;" class="back-to-shop-btn">
+                        <i class="fas fa-arrow-left"></i> Continue shopping
+                    </a>
                 </nav>
                 <img class="img-logo" src="./../../../res/images/logoKick.png" alt="KICKS Logo" onclick="showPage('page-index')" style="cursor:pointer;">
                 <div class="user-actions" style="display:flex;align-items:center;gap:20px;">

@@ -1619,7 +1619,10 @@ function renderCheckoutMiniItems(cart) {
 }
 
 function generateOrderId() {
-    return 'ORD-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    const BASE = new Date('2025-01-01T00:00:00.000Z').getTime();
+    const sec  = Math.floor((Date.now() - BASE) / 1000); // giây kể từ 2025
+    const rand = Math.floor(Math.random() * 1000);
+    return 'ORD-' + sec + '-' + rand;
 }
 
 function processPayment() {

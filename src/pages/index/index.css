@@ -608,3 +608,28 @@
     font-size: 12px;
     font-weight: 700;
 }
+/* ── Back to shop button ── */
+.back-to-shop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark-text) !important;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    transition: all 0.2s;
+}
+
+.back-to-shop-btn:hover {
+    background: #222;
+    color: #fff !important;
+    border-color: #222;
+}
+
+.back-to-shop-btn i {
+    font-size: 12px;
+}

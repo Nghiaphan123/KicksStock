@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,13 +8,11 @@
   <link rel="stylesheet" href="../global/sidebar.css" />
   <link rel="stylesheet" href="style.css" />
   <script src="../global/sidebar.js" defer></script>
-  <script src="storage.js" defer></script>
   <script src="../../globals/initilization.js" defer></script>
+  <script src="storage.js" defer></script>
 </head>
-
 <body>
   <div class="main-container">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <h2>Kick Stock</h2>
       <ul class="nav-list">
@@ -28,51 +25,54 @@
       </ul>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
-      <div class="products-header">
+
+      <!-- Header -->
+      <div class="storage-page-header">
         <h1>Storage</h1>
+        <button id="create-order-btn" class="btn-create-order">+ Create Purchase Order</button>
       </div>
 
-      <div class="product-card-row header-row">
-        <div>ID</div>
-        <div>Name</div>
-        <div>Current Amount</div>
-        <div>Price</div>
-        <div>Add Amount</div>
-      </div>
+      <!-- Summary cards -->
+      <div class="storage-summary-cards" id="summary-cards"></div>
 
-      <!-- Products selection list -->
+      <!-- Product table by supplier -->
+      <div class="supplier-tabs" id="supplier-tabs"></div>
       <div class="storage-container">
-        <div class="product-list" id="storage-list"></div>
+        <div class="product-card-row header-row">
+          <div>ID</div>
+          <div>Product</div>
+          <div>Stock</div>
+          <div>Import Price (75%)</div>
+          <div>Add Qty</div>
+        </div>
+        <div id="storage-list"></div>
       </div>
 
-      <!-- Summary -->
-      <div class="storage-summary">
-        <p id="total-price">Total Price: $0.00</p>
-        <div class="summary-actions">
-          <button id="buy-btn">Buy</button>
-          <button id="clear-btn">Clear</button>
+      <div class="storage-actions">
+        <span id="total-price" class="total-label">Total: $0.00</span>
+        <div class="action-btns">
+          <button id="clear-btn" class="btn-clear">Clear</button>
+          <button id="buy-btn" class="btn-buy">Restock</button>
         </div>
       </div>
 
-      <!-- Storage Notes Section -->
-      <h2>Storage Notes</h2>
+      <!-- Purchase Notes -->
+      <div class="section-divider">
+        <h2>Purchase History</h2>
+      </div>
       <div class="note-card header-row">
         <div>ID</div>
+        <div>Supplier</div>
         <div>Total</div>
         <div>Date</div>
       </div>
-
-
       <div class="storage-notes">
         <div id="notes-list"></div>
       </div>
-
       <div class="notes-pagination" id="notes-pagination"></div>
 
     </main>
   </div>
 </body>
-
 </html>
