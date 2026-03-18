@@ -137,3 +137,126 @@
 #apply-filter:hover {
   background: #0056b3;
 }
+
+/* ── Top Selling Products ── */
+.top-products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.top-products-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.top-period-label {
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+}
+
+.top-prod-table-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.top-prod-table-header span:nth-child(1) { width: 32px; flex-shrink: 0; text-align: center; }
+.top-prod-table-header span:nth-child(2) { flex: 3; }
+.top-prod-table-header span:nth-child(3) { width: 90px; flex-shrink: 0; text-align: center; }
+.top-prod-table-header span:nth-child(4) { width: 100px; flex-shrink: 0; text-align: right; }
+
+.top-prod-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.15s;
+}
+
+.top-prod-row:hover { background: #fafafa; border-radius: 8px; }
+.top-prod-row:last-child { border-bottom: none; }
+
+.top-rank {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: #f0f0f0;
+  color: #888;
+  flex-shrink: 0;
+}
+
+.rank-1 { background: #FFD700; color: #7a5c00; }
+.rank-2 { background: #C0C0C0; color: #555; }
+.rank-3 { background: #CD7F32; color: #fff; }
+
+.top-prod-name {
+  flex: 3;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-prod-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #f5f5f5;
+  flex-shrink: 0;
+}
+
+.top-qty {
+  width: 90px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #28a745;
+}
+
+.top-revenue {
+  width: 100px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4f6bf5;
+}
+
+.top-bar-wrap {
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.top-bar {
+  height: 100%;
+  background: linear-gradient(to right, #28a745, #85e89d);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}

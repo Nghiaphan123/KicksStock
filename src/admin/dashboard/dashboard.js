@@ -210,7 +210,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initial render
   buildCharts();
+  renderTopProducts(parseInt(yearSel.value), parseInt(monthFromSel.value), parseInt(monthToSel.value));
 
   // Apply filter button
-  document.getElementById("apply-filter").addEventListener("click", buildCharts);
+  document.getElementById("apply-filter").addEventListener("click", () => {
+    buildCharts();
+    renderTopProducts(parseInt(yearSel.value), parseInt(monthFromSel.value), parseInt(monthToSel.value));
+  });
 });
+
+function renderTopProducts(year, monthFrom, monthTo) {
+  const allOrders  = JSON.parse(localStorage.getItem("allOrders")) || [];
+  const container  = document.getElementById("top-products-list");
+  const periodLabel = document.getElementById("top-products-period");
+  const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  if (periodLabel) {
+    periodLabel.textContent = monthFrom === monthTo
+      ? `${MONTH_NAMES[monthFrom-1]} ${year}`
+      : `${MONTH_NAMES[monthFrom-1]} — ${MONTH_NAMES[monthTo-1]} ${year}`;
+  }
+
+  // Count qty sold per product from Done orders in range
+  const salesMap = {};
+  allOrders.forEach(o => {
+    const d = new Date(o.date);
+    const m = d.getMonth() + 1;
+    if (o.status !== "Done") return;
+    if (d.getFullYear() !== year) return;
+    if (m < monthFrom || m > monthTo) return;
+
+    o.items.forEach(item => {
+      if (!salesMap[item.name]) {
+        salesMap[item.name] = { name: item.name, qty: 0, revenue: 0, image: item.image || '' };
+      }
+      salesMap[item.name].qty     += item.quantity || 1;
+      salesMap[item.name].revenue += (item.price || 0) * (item.quantity || 1);
+    });
+  });
+
+  const sorted = Object.values(salesMap).sort((a, b) => b.qty - a.qty).slice(0, 10);
+
+  if (sorted.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:#999;">No sales data for this period.</div>`;
+    return;
+  }
+
+  const maxQty = sorted[0].qty;
+
+  container.innerHTML = `
+    <div class="top-prod-table-header">
+      <span>#</span>
+      <span>Product</span>
+      <span>Units Sold</span>
+      <span>Revenue</span>
+      <span style="flex:2;">Sales Bar</span>
+    </div>
+    ${sorted.map((p, i) => `
+      <div class="top-prod-row">
+        <span class="top-rank ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span>
+        <span class="top-prod-name">
+          ${p.image ? `<img src="${p.image}" class="top-prod-img" onerror="this.style.display='none'">` : ''}
+          ${p.name}
+        </span>
+        <span class="top-qty">${p.qty}</span>
+        <span class="top-revenue">$${p.revenue.toFixed(2)}</span>
+        <span class="top-bar-wrap" style="flex:2;">
+          <div class="top-bar" style="width:${Math.round((p.qty / maxQty) * 100)}%"></div>
+        </span>
+      </div>
+    `).join('')}
+  `;
+}
