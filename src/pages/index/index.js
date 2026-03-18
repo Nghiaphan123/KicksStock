@@ -490,6 +490,7 @@ function renderOrdersList(ordersArray) {
                 <button class="status-filter-btn"               data-status="pending" onclick="setOrderStatusFilter('pending')">🟡 Pending</button>
                 <button class="status-filter-btn"               data-status="done"    onclick="setOrderStatusFilter('done')">🟢 Done</button>
                 <button class="status-filter-btn"               data-status="canceled" onclick="setOrderStatusFilter('canceled')">🔴 Canceled</button>
+                <button class="status-filter-btn"               data-status="returning" onclick="setOrderStatusFilter('returning')">🟠 Returning</button>
             </div>`;
         // Insert before the orders-list-container
         const container = document.getElementById('orders-list-container');
@@ -641,6 +642,19 @@ function applyOrderFilters() {
                </button>`
             : '';
 
+        // Tạo nút Request Return cho đơn hàng Done
+        const returnBtnHtml = statusClass === 'done'
+            ? `<button onclick="event.stopPropagation(); openReturnModal('${order.orderId}')"
+                class="btn-return-request">
+                Return
+               </button>`
+            : '';
+
+        // Badge Returning
+        const returningBadge = statusClass === 'returning'
+            ? `<span style="font-size:12px;color:#854F0B;background:#FAEEDA;padding:3px 10px;border-radius:6px;font-weight:600;">Return in progress</span>`
+            : '';
+
         html += `
             <div class="order-card" onclick="openOrderDetail(_allOrdersForFilter[${_allOrdersForFilter.indexOf(order)}])" style="cursor:pointer;">
                 <div class="order-header">
@@ -654,7 +668,9 @@ function applyOrderFilters() {
                 <div class="order-footer" style="margin-top: 10px;">
                     <div class="order-total">Total: $${order.totalPrice.toFixed(2)}</div>
                     <div style="display: flex; align-items: center; gap: 15px;">
+                        ${returningBadge}
                         ${cancelBtnHtml}
+                        ${returnBtnHtml}
                         <span class="od-view-btn">View Details →</span>
                     </div>
                 </div>
@@ -756,8 +772,116 @@ function confirmCancelOrder() {
     closeCancelModal();
 }
 /* ============================================================
-   8. HEADER GREETING
+   RETURN ORDER LOGIC
 ============================================================ */
+function openReturnModal(orderId) {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) return;
+
+    const users = getUsers();
+    const userIdx = users.findIndex(u => u.id == currentUser.id);
+    if (userIdx === -1) return;
+
+    const order = users[userIdx].orders?.find(o => o.orderId === orderId);
+    if (!order) return;
+
+    const reasons = ['Wrong size', 'Defective / damaged', 'Not as described', 'Changed my mind', 'Other'];
+
+    const itemsHtml = order.items.map(item => `
+        <label class="return-item-row">
+            <input type="checkbox" class="return-item-chk" data-id="${item.id}" data-name="${item.name}">
+            <img src="${item.image || 'https://via.placeholder.com/40'}" class="return-item-img" onerror="this.style.display='none'">
+            <div class="return-item-info">
+                <div class="return-item-name">${item.name}</div>
+                <div class="return-item-sub">Size: ${item.size} | Qty: ${item.quantity}</div>
+            </div>
+        </label>
+    `).join('');
+
+    const overlay = document.createElement('div');
+    overlay.id = 'return-modal-overlay';
+    overlay.className = 'modal-overlay active';
+    overlay.style.zIndex = '25000';
+    overlay.innerHTML = `
+        <div class="return-modal">
+            <div class="return-modal-header">
+                <div>
+                    <div style="font-size:18px;font-weight:800;">Return Request</div>
+                    <div style="font-size:13px;color:#888;margin-top:2px;">${order.orderId}</div>
+                </div>
+                <button onclick="closeReturnModal()" class="return-close-btn">✕</button>
+            </div>
+            <div class="return-modal-body">
+                <div class="return-section-label">Select items to return:</div>
+                <div class="return-items-list">${itemsHtml}</div>
+                <div class="return-section-label" style="margin-top:16px;">Reason:</div>
+                <select id="return-reason" class="return-reason-select">
+                    ${reasons.map(r => `<option value="${r}">${r}</option>`).join('')}
+                </select>
+            </div>
+            <div class="return-modal-footer">
+                <button onclick="closeReturnModal()" class="return-btn-cancel">Cancel</button>
+                <button onclick="confirmReturn('${orderId}')" class="return-btn-submit">Submit Return</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeReturnModal(); });
+}
+
+function closeReturnModal() {
+    document.getElementById('return-modal-overlay')?.remove();
+}
+
+function confirmReturn(orderId) {
+    const checked = document.querySelectorAll('.return-item-chk:checked');
+    if (checked.length === 0) {
+        showToast('<span>Please select at least one item to return.</span>', 'error');
+        return;
+    }
+
+    const reason = document.getElementById('return-reason')?.value || 'Other';
+    const returnItems = Array.from(checked).map(chk => ({
+        id: chk.dataset.id,
+        name: chk.dataset.name
+    }));
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) return;
+
+    // Update users[].orders
+    const users = getUsers();
+    const userIdx = users.findIndex(u => u.id == currentUser.id);
+    if (userIdx !== -1) {
+        const orderIdx = users[userIdx].orders?.findIndex(o => o.orderId === orderId);
+        if (orderIdx !== -1) {
+            users[userIdx].orders[orderIdx].status = 'Returning';
+            users[userIdx].orders[orderIdx].returnReason = reason;
+            users[userIdx].orders[orderIdx].returnItems = returnItems;
+            users[userIdx].orders[orderIdx].returnDate = new Date().toISOString();
+        }
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    // Update allOrders (admin)
+    const allOrders = JSON.parse(localStorage.getItem('allOrders')) || [];
+    const adminIdx = allOrders.findIndex(o => o.orderId === orderId);
+    if (adminIdx !== -1) {
+        allOrders[adminIdx].status = 'Returning';
+        allOrders[adminIdx].returnReason = reason;
+        allOrders[adminIdx].returnItems = returnItems;
+        allOrders[adminIdx].returnDate = new Date().toISOString();
+        localStorage.setItem('allOrders', JSON.stringify(allOrders));
+    }
+
+    closeReturnModal();
+    showToast(`<span>Return request submitted! ✓</span>`, 'success');
+
+    // Re-render
+    const updatedUser = getUsers().find(u => u.id == currentUser.id);
+    if (updatedUser) renderOrdersList(updatedUser.orders || []);
+}
 function updateHeaderGreeting() {
     const greetingEl = document.getElementById('header-greeting');
     const userIcon   = document.getElementById('header-user-icon');
@@ -1619,10 +1743,7 @@ function renderCheckoutMiniItems(cart) {
 }
 
 function generateOrderId() {
-    const BASE = new Date('2025-01-01T00:00:00.000Z').getTime();
-    const sec  = Math.floor((Date.now() - BASE) / 1000); // giây kể từ 2025
-    const rand = Math.floor(Math.random() * 1000);
-    return 'ORD-' + sec + '-' + rand;
+    return 'ORD-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
 }
 
 function processPayment() {

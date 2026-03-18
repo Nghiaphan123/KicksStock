@@ -1,7 +1,6 @@
 const ITEMS_PER_PAGE = 12;
 let currentPage = 1;
 let _allOrders = [];
-let _filteredOrders = []; // Thêm biến lưu danh sách đã lọc
 let _hiddenOrders = new Set(JSON.parse(sessionStorage.getItem('hiddenOrders') || '[]'));
 let _showHidden = false;
 
@@ -32,18 +31,16 @@ function toggleShowHidden() {
 let _activeStatus = 'all';
 
 /* ── Filter helpers ── */
-function applyFilters() {
+function applyFilters(resetPage = true) {
   const orderId  = document.getElementById('search-orderid')?.value.toLowerCase().trim() || '';
   const dateVal  = document.getElementById('search-date')?.value || '';
   const customer = document.getElementById('search-customer')?.value.toLowerCase().trim() || '';
   const status   = document.getElementById('search-status')?.value || 'all';
   const payment  = document.getElementById('search-payment')?.value || 'all';
 
-  _filteredOrders = _allOrders.filter(o => {
-    // Ẩn/hiện theo hidden state
+  const filtered = _allOrders.filter(o => {
     const isHidden = _hiddenOrders.has(o.orderId);
     if (isHidden && !_showHidden) return false;
-
     if (status  !== 'all' && o.status.toLowerCase() !== status)                    return false;
     if (payment !== 'all' && (o.paymentMethod || '').toLowerCase() !== payment)    return false;
     if (orderId   && !o.orderId.toLowerCase().includes(orderId))                   return false;
@@ -55,8 +52,8 @@ function applyFilters() {
     return true;
   });
 
-  currentPage = 1; // Chỉ reset về trang 1 khi người dùng lọc dữ liệu
-  renderOrders(_filteredOrders);
+  if (resetPage) currentPage = 1;
+  renderOrders(filtered);
 }
 
 function clearFilters() {
@@ -65,7 +62,8 @@ function clearFilters() {
   document.getElementById('search-customer').value = '';
   document.getElementById('search-status').value   = 'all';
   document.getElementById('search-payment').value  = 'all';
-  applyFilters();
+  currentPage = 1;
+  applyFilters(false);
 }
 
 /* ── Inline field edit helpers ── */
@@ -126,14 +124,36 @@ function openOrderPanel(order) {
     </div>
   `).join("");
 
-  // Kiểm tra trạng thái để quyết định có hiển thị nút hay không
-  const isPending = order.status.toLowerCase() === 'pending';
-  const actionsHtml = isPending ? `
+  // Return info section — only show if status is Returning
+  const isReturning = order.status.toLowerCase() === 'returning';
+  const returnInfoHtml = isReturning ? `
+    <div class="return-info-block">
+      <div class="return-info-title">Return Request</div>
+      <div><strong>Reason:</strong> ${order.returnReason || 'N/A'}</div>
+      ${order.returnDate ? `<div><strong>Submitted:</strong> ${new Date(order.returnDate).toLocaleString('en-GB')}</div>` : ''}
+      ${order.returnItems?.length ? `
+        <div style="margin-top:8px;"><strong>Items to return:</strong></div>
+        <ul class="return-items-ul">
+          ${order.returnItems.map(i => `<li>${i.name}</li>`).join('')}
+        </ul>
+      ` : ''}
+    </div>
+  ` : '';
+
+  // Action buttons — different per status
+  const actionBtnsHtml = isReturning ? `
+    <div class="panel-actions">
+      <button class="approve-return-btn">Approve Return</button>
+      <button class="reject-return-btn">Reject Return</button>
+      <button class="pending-btn">Pending</button>
+    </div>
+  ` : `
     <div class="panel-actions">
       <button class="done-btn">Done</button>
       <button class="canceled-btn">Canceled</button>
+      <button class="pending-btn">Pending</button>
     </div>
-  ` : ''; // Nếu Done hoặc Canceled thì trả về chuỗi rỗng (không hiện gì)
+  `;
 
   panel.innerHTML = `
     <button class="close-btn">×</button>
@@ -142,9 +162,10 @@ function openOrderPanel(order) {
     <div><strong>Date:</strong> ${new Date(order.date).toLocaleDateString("en-GB")}</div>
     <div><strong>Time:</strong> ${new Date(order.date).toLocaleTimeString("en-GB", {hour:'2-digit', minute:'2-digit'})}</div>
     <div><strong>Customer:</strong> ${order.customerName}</div>
-    <div><strong>Status:</strong> ${order.status}</div>
+    <div><strong>Status:</strong> <span class="status ${order.status.toLowerCase()}">${order.status}</span></div>
     <div><strong>Total Price:</strong> $${order.totalPrice.toFixed(2)}</div>
 
+    <!-- Payment Method editable -->
     <div class="editable-field">
       <strong>Payment Method:</strong>
       <span id="pm-display">${order.paymentMethod || "N/A"}</span>
@@ -158,6 +179,7 @@ function openOrderPanel(order) {
       <button class="save-field-btn" id="pm-save-btn" style="display:none;" onclick="saveFieldEdit('pm', '${order.orderId}', 'paymentMethod')">Save</button>
     </div>
 
+    <!-- Shipping Address editable -->
     <div class="editable-field">
       <strong>Shipping Address:</strong>
       <span id="sa-display">${order.shippingAddress || "N/A"}</span>
@@ -166,20 +188,35 @@ function openOrderPanel(order) {
       <button class="save-field-btn" id="sa-save-btn" style="display:none;" onclick="saveFieldEdit('sa', '${order.orderId}', 'shippingAddress')">Save</button>
     </div>
 
+    ${returnInfoHtml}
+
     <h3>Items</h3>
     <div class="items-container">
       ${itemsList}
     </div>
-    ${actionsHtml}
+    ${actionBtnsHtml}
   `;
 
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
 
   panel.querySelector(".close-btn").addEventListener("click", () => { panel.remove(); overlay.remove(); });
-  
-  // Chỉ thêm event listener nếu các nút này tồn tại trên giao diện (isPending = true)
-  if (isPending) {
+  panel.querySelector(".pending-btn").addEventListener("click", () => { updateOrderStatus(order.orderId, "Pending"); panel.remove(); overlay.remove(); });
+
+  if (isReturning) {
+    panel.querySelector(".approve-return-btn").addEventListener("click", () => {
+      if (confirm(`Approve return for order #${order.orderId}?\nThis will set status to "Returned".`)) {
+        updateOrderStatus(order.orderId, "Returned");
+        panel.remove(); overlay.remove();
+      }
+    });
+    panel.querySelector(".reject-return-btn").addEventListener("click", () => {
+      if (confirm(`Reject return for order #${order.orderId}?\nThis will set status back to "Done".`)) {
+        updateOrderStatus(order.orderId, "Done");
+        panel.remove(); overlay.remove();
+      }
+    });
+  } else {
     panel.querySelector(".done-btn").addEventListener("click", () => { updateOrderStatus(order.orderId, "Done"); panel.remove(); overlay.remove(); });
     panel.querySelector(".canceled-btn").addEventListener("click", () => { updateOrderStatus(order.orderId, "Canceled"); panel.remove(); overlay.remove(); });
   }
@@ -191,18 +228,6 @@ function updateOrderStatus(orderId, newStatus) {
   const index = allOrders.findIndex(o => o.orderId === orderId);
 
   if (index !== -1) {
-    // Nếu chuyển sang Canceled -> Cộng lại tồn kho sản phẩm
-    if (newStatus === "Canceled" && allOrders[index].status !== "Canceled") {
-        let products = JSON.parse(localStorage.getItem("products")) || [];
-        allOrders[index].items.forEach(item => {
-            const pIdx = products.findIndex(p => p.id === item.id);
-            if (pIdx !== -1) {
-                products[pIdx].amount = (products[pIdx].amount ?? 0) + item.quantity;
-            }
-        });
-        localStorage.setItem("products", JSON.stringify(products));
-    }
-
     allOrders[index].status = newStatus;
     localStorage.setItem("allOrders", JSON.stringify(allOrders));
 
@@ -287,10 +312,7 @@ function renderPagination(orders) {
   if (currentPage > 1) {
     const prev = document.createElement("button");
     prev.textContent = "Previous";
-    prev.addEventListener("click", () => { 
-      currentPage--; 
-      renderOrders(_filteredOrders); // Sử dụng mảng đã lọc thay vì chạy lại applyFilters()
-    });
+    prev.addEventListener("click", () => { currentPage--; applyFilters(false); });
     pagination.appendChild(prev);
   }
 
@@ -298,20 +320,14 @@ function renderPagination(orders) {
     const btn = document.createElement("button");
     btn.textContent = i;
     btn.className = i === currentPage ? "active" : "";
-    btn.addEventListener("click", () => { 
-      currentPage = i; 
-      renderOrders(_filteredOrders); // Sử dụng mảng đã lọc
-    });
+    btn.addEventListener("click", () => { currentPage = i; applyFilters(false); });
     pagination.appendChild(btn);
   }
 
   if (currentPage < totalPages) {
     const next = document.createElement("button");
     next.textContent = "Next";
-    next.addEventListener("click", () => { 
-      currentPage++; 
-      renderOrders(_filteredOrders); // Sử dụng mảng đã lọc
-    });
+    next.addEventListener("click", () => { currentPage++; applyFilters(false); });
     pagination.appendChild(next);
   }
 }
@@ -319,5 +335,5 @@ function renderPagination(orders) {
 /* ── Init ── */
 document.addEventListener("DOMContentLoaded", () => {
   _allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
-  applyFilters(); // Khởi tạo bằng cách chạy qua bộ lọc một lần
+  renderOrders(_allOrders);
 });

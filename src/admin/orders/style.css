@@ -448,3 +448,70 @@ Search & Filter Bar — Pill Style
   background: #fff;
   cursor: pointer;
 }
+
+/* ── Returning / Returned status ── */
+.status.returning {
+  background-color: #FAEEDA;
+  color: #633806;
+}
+
+.status.returned {
+  background-color: #E1F5EE;
+  color: #085041;
+}
+
+/* ── Return info block in panel ── */
+.return-info-block {
+  margin: 12px 0;
+  padding: 14px 16px;
+  background: #FAEEDA;
+  border-radius: 10px;
+  border-left: 4px solid #BA7517;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.return-info-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #633806;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.return-items-ul {
+  margin: 4px 0 0 16px;
+  padding: 0;
+  font-size: 13px;
+  color: #444;
+}
+
+/* ── Approve / Reject buttons ── */
+.approve-return-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #1D9E75;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+.approve-return-btn:hover { background-color: #0F6E56; }
+
+.reject-return-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #E24B4A;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+.reject-return-btn:hover { background-color: #A32D2D; }
